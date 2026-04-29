@@ -158,13 +158,17 @@ export default function AITryOnPage() {
   };
 
   const nextStep = () => {
-    setState(prev => {
-      const next = prev.currentStep + 1;
-      if (next === 4) {
-        generateResult(prev.personImage, prev.clothingImage, prev.mode);
-      }
-      return { ...prev, currentStep: next as AppStep };
-    });
+    const next = (state.currentStep + 1) as AppStep;
+    const { personImage, clothingImage, mode } = state;
+
+    setState(prev => ({
+      ...prev,
+      currentStep: next
+    }));
+
+    if (next === 4) {
+      generateResult(personImage, clothingImage, mode);
+    }
   };
 
   const prevStep = () => {

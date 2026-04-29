@@ -7,7 +7,6 @@ interface UploadAreaProps {
   onFileSelect: (file: File) => void;
   accept?: string;
   previewUrl?: string | null;
-  minHeight?: string;
 }
 
 export const UploadArea: React.FC<UploadAreaProps> = ({
