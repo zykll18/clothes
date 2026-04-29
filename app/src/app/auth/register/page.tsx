@@ -72,7 +72,7 @@ export default function RegisterPage() {
 
       // Registration successful, redirect to login
       router.push('/auth/login?registered=true');
-    } catch (error) {
+    } catch {
       setApiError('网络错误，请稍后重试');
     } finally {
       setIsLoading(false);

@@ -53,6 +53,10 @@ export default function AITryOnPage() {
     }
   }, [state.currentStep, clothingSource]);
 
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    return error instanceof Error ? error.message : fallback;
+  };
+
   const fetchSavedClothes = async () => {
     setClothesLoading(true);
     try {
@@ -82,8 +86,6 @@ export default function AITryOnPage() {
         const minSize = 200;
 
         // 保持宽高比
-        const aspectRatio = width / height;
-
         const maxDimension = Math.max(width, height);
         if (maxDimension > maxSize) {
           const ratio = maxSize / maxDimension;
@@ -221,11 +223,11 @@ export default function AITryOnPage() {
             }));
           }
         }
-      } catch (err: any) {
+      } catch (error: unknown) {
         setState(prev => ({
           ...prev,
           isGenerating: false,
-          error: err.message || '查询状态失败'
+          error: getErrorMessage(error, '查询状态失败')
         }));
       }
     };
@@ -260,11 +262,11 @@ export default function AITryOnPage() {
       }
 
       pollTaskStatus(data.taskId);
-    } catch (err: any) {
+    } catch (error: unknown) {
       setState(prev => ({
         ...prev,
         isGenerating: false,
-        error: err.message || '网络错误，请稍后重试'
+        error: getErrorMessage(error, '网络错误，请稍后重试')
       }));
     }
   };

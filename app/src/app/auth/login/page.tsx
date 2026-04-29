@@ -57,7 +57,7 @@ function LoginForm() {
 
       // Login successful, redirect to profile or home
       router.push('/profile');
-    } catch (error) {
+    } catch {
       setApiError('网络错误，请稍后重试');
     } finally {
       setIsLoading(false);

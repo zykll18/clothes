@@ -15,8 +15,7 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
   subtitle,
   onFileSelect,
   accept = "image/png, image/jpeg, image/jpg, image/webp, image/gif",
-  previewUrl,
-  minHeight = "min-h-[300px]"
+  previewUrl
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageLoading, setImageLoading] = useState(true);

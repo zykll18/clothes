@@ -20,7 +20,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
         {/* Connecting Lines */}
         <div className="absolute top-1/2 left-0 w-full h-0.5 -translate-y-1/2 bg-gray-200 -z-10 rounded"></div>
         
-        {steps.map((step, index) => {
+        {steps.map((step) => {
           const isActive = step.id === currentStep;
           const isCompleted = step.id < currentStep;
           

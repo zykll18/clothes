@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, AlertCircle, Download, RefreshCw } from 'lucide-react';
+import { AlertCircle, Download, RefreshCw } from 'lucide-react';
 
 interface ResultViewProps {
   isGenerating: boolean;
