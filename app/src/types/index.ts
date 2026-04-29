@@ -2,45 +2,40 @@
 
 // 用户类型
 export type BodyType = 'SLIM' | 'REGULAR' | 'ATHLETIC' | 'PLUS_SIZE';
+export type ClothingCategory = 'TOP' | 'BOTTOM' | 'DRESS' | 'OUTERWEAR' | 'SHOES' | 'ACCESSORY';
+export type StyleType = 'CASUAL' | 'FORMAL' | 'SPORTS' | 'BUSINESS' | 'PARTY';
+export type OccasionType = 'WORK' | 'DATE' | 'PARTY' | 'TRAVEL' | 'HOME';
+export type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  avatar?: string;
-  height?: number;
-  weight?: number;
-  bodyType?: BodyType;
+  avatar?: string | null;
+  height?: number | null;
+  weight?: number | null;
+  bodyType?: BodyType | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // 衣物类型
-export type ClothingCategory = 'TOP' | 'BOTTOM' | 'DRESS' | 'OUTERWEAR' | 'SHOES' | 'ACCESSORY';
-
 export interface ClothingItem {
   id: string;
   userId: string;
   name: string;
   category: ClothingCategory;
+  clothType: string;
   imageUrl: string;
-  color: string;
-  brand?: string;
-  price?: number;
-  size?: string;
-  material?: string;
-  tags: string[];
-  position: { x: number; y: number };
-  scale: { x: number; y: number };
-  rotation: number;
-  opacity: number;
+  color?: string | null;
+  brand?: string | null;
+  price?: number | null;
+  size?: string | null;
+  material?: string | null;
+  tags: string;
   createdAt: Date;
   updatedAt: Date;
 }
-
-// 搭配类型
-export type StyleType = 'CASUAL' | 'FORMAL' | 'SPORTS' | 'BUSINESS' | 'PARTY';
-export type OccasionType = 'WORK' | 'DATE' | 'PARTY' | 'TRAVEL' | 'HOME';
 
 export interface Outfit {
   id: string;
@@ -63,19 +58,6 @@ export interface OutfitItem {
   clothing: ClothingItem;
 }
 
-// 用户偏好类型
-export interface UserPreference {
-  id: string;
-  userId: string;
-  favoriteStyle: StyleType[];
-  favoriteColor: string[];
-  favoriteBrand: string[];
-  sizeChart: any;
-  occasions: OccasionType[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 // Canvas相关类型
 export interface CanvasPosition {
   x: number;
@@ -94,8 +76,23 @@ export interface ClothingTransform {
   opacity: number;
 }
 
+export interface PreviewClothingItem extends ClothingItem, ClothingTransform {}
+
+// 用户偏好类型
+export interface UserPreference {
+  id: string;
+  userId: string;
+  favoriteStyle: string;
+  favoriteColor: string;
+  favoriteBrand: string;
+  sizeChart: JsonValue;
+  occasions: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // API响应类型
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
