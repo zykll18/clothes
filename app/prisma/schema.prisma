@@ -1,0 +1,148 @@
+// 穿搭预览应用数据库模式
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 用户模型
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    String?
+  height    Float?   // 身高(cm)
+  weight    Float?   // 体重(kg)
+  bodyType  BodyType?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关联关系
+  clothingItems ClothingItem[]
+  outfits       Outfit[]
+  preferences   UserPreference[]
+  tryOnHistory  TryOnHistory[]
+}
+
+// 衣物模型
+model ClothingItem {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  category    ClothingCategory
+  clothType   String   // 衣服类型: upper, lower (用于AI试衣)
+  imageUrl    String
+  color       String?
+  brand       String?
+  price       Float?
+  size        String?
+  material    String?
+  tags        String      @default("")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfits     OutfitItem[]
+}
+
+// 搭配模型
+model Outfit {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isPublic    Boolean  @default(false)
+  likes       Int      @default(0)
+  rating      Float?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OutfitItem[]
+}
+
+// 搭配项关联表
+model OutfitItem {
+  id         String      @id @default(cuid())
+  outfitId   String
+  clothingId String
+  layer      Int         @default(0) // 图层顺序
+
+  createdAt  DateTime    @default(now())
+
+  outfit     Outfit      @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  clothing   ClothingItem @relation(fields: [clothingId], references: [id], onDelete: Cascade)
+}
+
+// 用户偏好模型
+model UserPreference {
+  id            String        @id @default(cuid())
+  userId        String
+  favoriteStyle String      @default("")
+  favoriteColor String      @default("")
+  favoriteBrand String      @default("")
+  sizeChart     Json          // 尺码偏好
+  occasions     String      @default("")// 常用场合
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// AI 试衣历史记录
+model TryOnHistory {
+  id              String   @id @default(cuid())
+  userId          String
+  personImageUrl  String   // 用户照片 URL
+  clothImageUrl   String   // 衣服照片 URL
+  keepClothImageUrl String? // 保留的衣服照片 URL（叠加模式）
+  resultImageUrl  String   // AI 生成结果 URL
+  clothType       String   // 衣服类型: upper, lower, full
+  tryOnMode       String   // 试衣模式: replace, overlay
+
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 枚举类型
+enum BodyType {
+  SLIM
+  REGULAR
+  ATHLETIC
+  PLUS_SIZE
+}
+
+enum ClothingCategory {
+  TOP
+  BOTTOM
+  DRESS
+  OUTERWEAR
+  SHOES
+  ACCESSORY
+}
+
+enum StyleType {
+  CASUAL
+  FORMAL
+  SPORTS
+  BUSINESS
+  PARTY
+}
+
+enum OccasionType {
+  WORK
+  DATE
+  PARTY
+  TRAVEL
+  HOME
+}
