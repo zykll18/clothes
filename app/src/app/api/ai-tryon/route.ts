@@ -104,6 +104,81 @@ interface TryOnRequest {
   keepClothImage?: string;  // 要保留的衣服图片（用于叠加模式）
 }
 
+interface DashScopeImageSynthesisInput {
+  person_image_url: string;
+  top_garment_url?: string;
+  bottom_garment_url?: string;
+}
+
+interface DashScopeImageSynthesisParameters {
+  resolution: number;
+}
+
+interface DashScopeImageSynthesisRequest {
+  model: 'aitryon';
+  input: DashScopeImageSynthesisInput;
+  parameters: DashScopeImageSynthesisParameters;
+}
+
+interface DashScopeTaskOutput {
+  task_id?: string;
+}
+
+interface DashScopeTaskResponse {
+  output?: DashScopeTaskOutput;
+}
+
+interface DashScopeErrorResponse {
+  message?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isTryOnClothType(value: unknown): value is TryOnRequest['clothType'] {
+  return value === 'upper' || value === 'lower' || value === 'full';
+}
+
+function parseTryOnRequest(rawBody: unknown): TryOnRequest | null {
+  if (!isRecord(rawBody)) {
+    return null;
+  }
+
+  const { personImage, clothImage, clothType, keepClothImage } = rawBody;
+  if (
+    typeof personImage !== 'string' ||
+    typeof clothImage !== 'string' ||
+    !isTryOnClothType(clothType)
+  ) {
+    return null;
+  }
+
+  if (keepClothImage !== undefined && typeof keepClothImage !== 'string') {
+    return null;
+  }
+
+  return {
+    personImage,
+    clothImage,
+    clothType,
+    keepClothImage,
+  };
+}
+
+function getDashScopeTaskId(value: unknown): string | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const { output } = value;
+  if (!isRecord(output) || typeof output.task_id !== 'string') {
+    return null;
+  }
+
+  return output.task_id;
+}
+
 /**
  * 调用阿里云 AI 试衣 API
  * 文档：https://help.aliyun.com/zh/model-studio/outfitanyone-api
@@ -117,7 +192,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: TryOnRequest = await request.json();
+    const rawBody: unknown = await request.json();
+    const body = parseTryOnRequest(rawBody);
+    if (!body) {
+      return NextResponse.json(
+        { error: '请上传用户照片和衣服照片' },
+        { status: 400 }
+      );
+    }
+
     const { personImage, clothImage, clothType, keepClothImage } = body;
 
     // 验证必填参数
@@ -138,7 +221,7 @@ export async function POST(request: NextRequest) {
     console.log('图片处理完成，调用阿里云 AI 试衣 API...');
 
     // 构建请求体（使用处理后的图片）
-    const requestBody: any = {
+    const requestBody: DashScopeImageSynthesisRequest = {
       model: 'aitryon',  // 使用标准版模型
       input: {
         person_image_url: processedPersonImage,
@@ -176,7 +259,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = await response.json().catch((): DashScopeErrorResponse => ({})) as DashScopeErrorResponse;
       console.error('阿里云 API 错误:', errorData);
       return NextResponse.json(
         { error: `AI 试衣服务调用失败: ${errorData.message || response.statusText}` },
@@ -184,28 +267,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await response.json();
+    const data = await response.json() as DashScopeTaskResponse;
     console.log('阿里云 API 响应:', data);
+
+    const taskId = getDashScopeTaskId(data);
+    if (!taskId) {
+      return NextResponse.json(
+        { error: 'AI 试衣服务返回了无效任务信息' },
+        { status: 500 }
+      );
+    }
 
     // 返回任务 ID，前端需要轮询查询结果
     return NextResponse.json({
       success: true,
-      taskId: data.output?.task_id,
+      taskId,
       message: 'AI 试衣任务已创建，正在处理中...',
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : '';
     console.error('AI 试衣 API 错误:', error);
 
     // 根据错误类型返回不同的错误信息
-    if (error.message?.includes('heif') || error.message?.includes('HEIF')) {
+    if (message.includes('heif') || message.includes('HEIF')) {
       return NextResponse.json(
         { error: '不支持 HEIF/HEIC 格式的图片，请转换为 JPG 或 PNG 后重试' },
         { status: 400 }
       );
     }
 
-    if (error.message?.includes('VipsJpeg')) {
+    if (message.includes('VipsJpeg')) {
       return NextResponse.json(
         { error: '图片格式有误，请尝试使用其他 JPG/PNG 图片' },
         { status: 400 }

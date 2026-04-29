@@ -9,6 +9,15 @@ export interface JWTPayload {
   email: string;
 }
 
+function isJWTPayload(value: unknown): value is JWTPayload {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.userId === 'string' && typeof candidate.email === 'string';
+}
+
 // 生成JWT
 export function generateToken(payload: JWTPayload): string {
   return jwt.sign(payload, JWT_SECRET, {
@@ -19,8 +28,9 @@ export function generateToken(payload: JWTPayload): string {
 // 验证JWT
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
-  } catch (error) {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return isJWTPayload(decoded) ? decoded : null;
+  } catch {
     return null;
   }
 }
