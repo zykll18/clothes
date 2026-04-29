@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as fabric from 'fabric';
-import { ClothingItem, ClothingTransform } from '@/types';
+import { ClothingTransform, PreviewClothingItem } from '@/types';
 
 interface CanvasPreviewProps {
   backgroundImage?: string;
-  clothingItems: ClothingItem[];
-  onPositionChange?: (item: ClothingItem, transform: ClothingTransform) => void;
+  clothingItems: PreviewClothingItem[];
+  onPositionChange?: (item: PreviewClothingItem, transform: ClothingTransform) => void;
   width?: number;
   height?: number;
 }

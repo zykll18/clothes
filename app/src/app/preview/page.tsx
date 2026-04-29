@@ -2,29 +2,34 @@
 
 import { useState } from 'react';
 import CanvasPreview from '@/components/canvas/CanvasPreview';
-import { ClothingItem, ClothingTransform } from '@/types';
+import { ClothingTransform, PreviewClothingItem } from '@/types';
 
 export default function PreviewPage() {
   const [backgroundImage, setBackgroundImage] = useState<string>('');
-  const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
+  const [clothingItems, setClothingItems] = useState<PreviewClothingItem[]>([
     {
       id: '1',
       userId: '',
       name: '示例上衣',
       category: 'TOP',
+      clothType: 'T_SHIRT',
       imageUrl: '/images/sample-top.png',
       color: '#000000',
+      brand: null,
+      price: null,
+      size: null,
+      material: null,
+      tags: '',
       position: { x: 300, y: 200 },
       scale: { x: 0.8, y: 0.8 },
       rotation: 0,
       opacity: 0.8,
-      tags: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     },
   ]);
 
-  const handlePositionChange = (item: ClothingItem, transform: ClothingTransform) => {
+  const handlePositionChange = (item: PreviewClothingItem, transform: ClothingTransform) => {
     setClothingItems(prev =>
       prev.map(prevItem =>
         prevItem.id === item.id
