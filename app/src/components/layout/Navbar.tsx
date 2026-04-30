@@ -9,7 +9,7 @@ export default function Navbar() {
   const navItems = [
     { href: '/', label: '首页' },
     { href: '/preview', label: '搭配预览' },
-    { href: '/wardrobe', label: '我的衣橱' },
+    { href: '/tryon', label: 'AI试衣' },
     { href: '/profile', label: '个人中心' },
   ];
 
