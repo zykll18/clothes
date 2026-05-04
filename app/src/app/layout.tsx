@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,9 +12,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["italic"],
+});
+
 export const metadata: Metadata = {
-  title: "穿搭预览",
-  description: "基于 Next.js 与 DashScope 的智能穿搭预览与 AI 试衣应用",
+  title: "Aura | AI 试衣叙事体验",
+  description: "以高级时装视觉语言重构的 AI 试衣与穿搭预览体验首页。",
 };
 
 export default function RootLayout({
@@ -25,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} bg-[#050505] antialiased`}
       >
         {children}
       </body>
