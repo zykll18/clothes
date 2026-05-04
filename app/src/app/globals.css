@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --foreground: #f5f2ed;
+  --muted-foreground: rgba(245, 242, 237, 0.68);
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.24);
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.11);
+  --shadow-bloom: 0 0 120px rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -10,57 +16,115 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-cormorant);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--background);
 }
 
 body {
+  min-height: 100dvh;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, #050505 0%, #080808 45%, #050505 100%);
+  font-family: var(--font-geist-sans), sans-serif;
 }
 
-/* Custom animations for the AI try-on page */
+::selection {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
 @layer utilities {
-  @keyframes blob {
-    0% {
-      transform: translate(0px, 0px) scale(1);
+  .font-heading {
+    font-family: var(--font-cormorant), serif;
+  }
+
+  .lux-surface {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 16px 60px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .lux-surface-strong {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--line-strong);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 18px 80px rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+  }
+
+  .lux-outline {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lux-outline::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.44) 0%,
+      rgba(255, 255, 255, 0.1) 24%,
+      rgba(255, 255, 255, 0) 55%,
+      rgba(255, 255, 255, 0.2) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .lux-bloom {
+    box-shadow: var(--shadow-bloom);
+  }
+
+  .text-muted-lux {
+    color: var(--muted-foreground);
+  }
+
+  .animate-fade-up-blur {
+    animation: fade-up-blur 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-glow-drift {
+    animation: glow-drift 9s ease-in-out infinite;
+  }
+
+  @keyframes fade-up-blur {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+      filter: blur(14px);
     }
-    33% {
-      transform: translate(30px, -50px) scale(1.1);
-    }
-    66% {
-      transform: translate(-20px, 20px) scale(0.9);
-    }
-    100% {
-      transform: translate(0px, 0px) scale(1);
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
     }
   }
 
-  .animate-blob {
-    animation: blob 7s infinite;
-  }
-
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-
-  .animation-delay-3000 {
-    animation-delay: 3s;
-  }
-
-  .animation-delay-4000 {
-    animation-delay: 4s;
-  }
-
-  /* Dashed border style */
-  .dashed-border {
-    border-style: dashed;
-    border-width: 2px;
+  @keyframes glow-drift {
+    0%, 100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.55;
+    }
+    50% {
+      transform: translate3d(0, -14px, 0) scale(1.04);
+      opacity: 0.85;
+    }
   }
 }
-
