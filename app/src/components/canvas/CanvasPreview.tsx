@@ -54,13 +54,15 @@ export default function CanvasPreview({
             const scale = Math.min(width / (img.width || 1), height / (img.height || 1));
             img.scale(scale);
 
-            fabricCanvas.setBackgroundImage(img, fabricCanvas.requestRenderAll.bind(fabricCanvas));
+            fabricCanvas.set('backgroundImage', img);
+            fabricCanvas.requestRenderAll();
           });
         } catch (error) {
           console.error('Error loading background image:', error);
         }
       } else {
-        fabricCanvas.setBackgroundImage(null, fabricCanvas.requestRenderAll.bind(fabricCanvas));
+        fabricCanvas.set('backgroundImage', undefined);
+        fabricCanvas.requestRenderAll();
       }
     };
 
