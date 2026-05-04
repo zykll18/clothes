@@ -14,6 +14,7 @@ export default function HomeNavbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link
           href="/"
+          aria-label="Aura 首页"
           className="lux-surface lux-outline flex h-12 w-12 items-center justify-center rounded-full text-xl text-white"
         >
           <span className="font-heading italic leading-none">a</span>
@@ -38,7 +39,12 @@ export default function HomeNavbar() {
           </Link>
         </nav>
 
-        <div className="h-12 w-12 md:hidden" />
+        <Link
+          href="/auth/register"
+          className="lux-surface lux-outline inline-flex h-12 items-center rounded-full px-4 text-sm font-medium text-white md:hidden"
+        >
+          试穿
+        </Link>
       </div>
     </header>
   );
