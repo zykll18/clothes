@@ -39,12 +39,30 @@ export default function HomeNavbar() {
           </Link>
         </nav>
 
-        <Link
-          href="/auth/register"
-          className="lux-surface lux-outline inline-flex h-12 items-center rounded-full px-4 text-sm font-medium text-white md:hidden"
-        >
-          试穿
-        </Link>
+        <div className="flex items-center gap-2 md:hidden">
+          <details className="group relative">
+            <summary className="lux-surface lux-outline flex h-12 cursor-pointer list-none items-center rounded-full px-4 text-sm font-medium text-white">
+              菜单
+            </summary>
+            <div className="lux-surface lux-outline absolute right-0 top-14 flex min-w-[12rem] flex-col rounded-[1.5rem] p-2 text-sm text-white">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-full px-4 py-3 transition hover:bg-white/8"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href="/auth/register"
+                className="mt-1 rounded-full bg-white px-4 py-3 text-center font-medium text-black transition hover:bg-white/90"
+              >
+                开始试穿
+              </Link>
+            </div>
+          </details>
+        </div>
       </div>
     </header>
   );
