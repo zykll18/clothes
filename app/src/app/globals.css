@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
-  --foreground: #f5f2ed;
-  --muted-foreground: rgba(245, 242, 237, 0.68);
-  --line: rgba(255, 255, 255, 0.12);
-  --line-strong: rgba(255, 255, 255, 0.24);
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface-strong: rgba(255, 255, 255, 0.11);
-  --shadow-bloom: 0 0 120px rgba(255, 255, 255, 0.08);
+  --background: #ffffff;
+  --foreground: #171717;
+  --lux-background: #050505;
+  --lux-foreground: #f5f2ed;
+  --lux-muted-foreground: rgba(245, 242, 237, 0.68);
+  --lux-line: rgba(255, 255, 255, 0.12);
+  --lux-line-strong: rgba(255, 255, 255, 0.24);
+  --lux-surface: rgba(255, 255, 255, 0.05);
+  --lux-surface-strong: rgba(255, 255, 255, 0.11);
+  --lux-shadow-bloom: 0 0 120px rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -19,16 +21,15 @@
   --font-heading: var(--font-cormorant);
 }
 
-html {
-  background: var(--background);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 body {
-  min-height: 100dvh;
   color: var(--foreground);
-  background:
-    radial-gradient(circle at top center, rgba(255, 255, 255, 0.08), transparent 28%),
-    linear-gradient(180deg, #050505 0%, #080808 45%, #050505 100%);
   font-family: var(--font-geist-sans), sans-serif;
 }
 
@@ -38,13 +39,21 @@ body {
 }
 
 @layer utilities {
+  .lux-page {
+    min-height: 100dvh;
+    color: var(--lux-foreground);
+    background:
+      radial-gradient(circle at top center, rgba(255, 255, 255, 0.08), transparent 28%),
+      linear-gradient(180deg, #050505 0%, #080808 45%, #050505 100%);
+  }
+
   .font-heading {
     font-family: var(--font-cormorant), serif;
   }
 
   .lux-surface {
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--line);
+    border: 1px solid var(--lux-line);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.14),
       0 16px 60px rgba(0, 0, 0, 0.28);
@@ -54,7 +63,7 @@ body {
 
   .lux-surface-strong {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--lux-line-strong);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.22),
       0 18px 80px rgba(0, 0, 0, 0.34);
@@ -89,11 +98,11 @@ body {
   }
 
   .lux-bloom {
-    box-shadow: var(--shadow-bloom);
+    box-shadow: var(--lux-shadow-bloom);
   }
 
   .text-muted-lux {
-    color: var(--muted-foreground);
+    color: var(--lux-muted-foreground);
   }
 
   .animate-fade-up-blur {
@@ -102,6 +111,42 @@ body {
 
   .animate-glow-drift {
     animation: glow-drift 9s ease-in-out infinite;
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-3000 {
+    animation-delay: 3s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  .dashed-border {
+    border-style: dashed;
+    border-width: 2px;
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
   }
 
   @keyframes fade-up-blur {
