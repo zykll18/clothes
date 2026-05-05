@@ -1,15 +1,32 @@
+import Link from 'next/link';
 import React from 'react';
-import { AlertCircle, Download, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Download, RefreshCw, Save } from 'lucide-react';
 
 interface ResultViewProps {
   isGenerating: boolean;
   resultImage: string | null;
   error: string | null;
   onRetry: () => void;
+  onSaveHistory?: () => void;
+  isSavingHistory?: boolean;
+  historySaved?: boolean;
+  historySaveError?: string | null;
   progress?: number;
 }
 
-export const ResultView: React.FC<ResultViewProps> = ({ isGenerating, resultImage, error, onRetry, progress = 0 }) => {
+export const ResultView: React.FC<ResultViewProps> = ({
+  isGenerating,
+  resultImage,
+  error,
+  onRetry,
+  onSaveHistory,
+  isSavingHistory = false,
+  historySaved = false,
+  historySaveError = null,
+  progress = 0,
+}) => {
+  const hasSaveControls = typeof onSaveHistory === 'function';
+
   if (isGenerating) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -61,29 +78,79 @@ export const ResultView: React.FC<ResultViewProps> = ({ isGenerating, resultImag
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <div className="relative w-full max-w-2xl bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-        <img 
-          src={resultImage || ''} 
-          alt="Generated Result" 
+        <img
+          src={resultImage || ''}
+          alt="Generated Result"
           className="w-full h-auto rounded-lg"
         />
       </div>
-      
-      <div className="mt-8 flex gap-4">
-        <button 
+
+      {hasSaveControls && historySaved && (
+        <div className="mt-6 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <CheckCircle2 size={16} />
+          <span>已保存到历史记录</span>
+        </div>
+      )}
+
+      {hasSaveControls && historySaveError && !historySaved && (
+        <div className="mt-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <AlertCircle size={16} />
+          <span>{historySaveError}</span>
+        </div>
+      )}
+
+      <div className="mt-8 flex flex-wrap justify-center gap-4">
+        <button
           onClick={onRetry}
           className="px-6 py-3 border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
         >
           <RefreshCw size={20} />
           重新试穿
         </button>
-        <a 
-          href={resultImage || '#'} 
+
+        {hasSaveControls && (
+          <button
+            onClick={onSaveHistory}
+            disabled={!resultImage || isSavingHistory || historySaved}
+            className="px-6 py-3 rounded-lg font-medium shadow-lg shadow-blue-200 flex items-center gap-2 transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed disabled:shadow-none"
+          >
+            {isSavingHistory ? (
+              <>
+                <RefreshCw size={20} className="animate-spin" />
+                保存中...
+              </>
+            ) : historySaved ? (
+              <>
+                <CheckCircle2 size={20} />
+                已保存
+              </>
+            ) : (
+              <>
+                <Save size={20} />
+                保存到历史
+              </>
+            )}
+          </button>
+        )}
+
+        <a
+          href={resultImage || '#'}
           download="try-on-result.png"
           className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-200 flex items-center gap-2"
         >
           <Download size={20} />
           下载图片
         </a>
+
+        {hasSaveControls && historySaved && (
+          <Link
+            href="/profile"
+            className="px-6 py-3 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors font-medium flex items-center gap-2"
+          >
+            <CheckCircle2 size={20} />
+            查看个人主页
+          </Link>
+        )}
       </div>
     </div>
   );
