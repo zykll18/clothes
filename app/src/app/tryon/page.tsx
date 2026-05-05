@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { StepIndicator } from '@/components/tryon/StepIndicator';
 import { UploadArea } from '@/components/tryon/UploadArea';
 import { ResultView } from '@/components/tryon/ResultView';
@@ -27,6 +28,7 @@ interface AppState {
 }
 
 export default function AITryOnPage() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>({
     currentStep: 1,
     personImage: null,
@@ -37,14 +39,59 @@ export default function AITryOnPage() {
     mode: 'upper_body'
   });
 
+  // Auth bootstrap state
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   // Progress state for generation
   const [progress, setProgress] = useState(0);
+
+  // History save state
+  const [, setIsSavingHistory] = useState(false);
+  const [, setHistorySaved] = useState(false);
+  const [, setHistorySaveError] = useState<string | null>(null);
 
   // Clothing selection state
   const [savedClothes, setSavedClothes] = useState<ClothingItem[]>([]);
   const [clothesLoading, setClothesLoading] = useState(false);
   const [showClothingSelector, setShowClothingSelector] = useState(false);
   const [clothingSource, setClothingSource] = useState<'upload' | 'saved'>('upload');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const verifyAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+
+        if (!response.ok) {
+          if (!cancelled) {
+            router.replace('/auth/login');
+          }
+          return;
+        }
+
+        if (!cancelled) {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('获取登录状态失败:', error);
+        if (!cancelled) {
+          router.replace('/auth/login');
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthLoading(false);
+        }
+      }
+    };
+
+    verifyAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   // Fetch saved clothes when entering step 2
   useEffect(() => {
@@ -157,6 +204,12 @@ export default function AITryOnPage() {
     setClothingSource('saved');
   };
 
+  const resetHistorySaveState = () => {
+    setIsSavingHistory(false);
+    setHistorySaved(false);
+    setHistorySaveError(null);
+  };
+
   const nextStep = () => {
     const next = (state.currentStep + 1) as AppStep;
     const { personImage, clothingImage, mode } = state;
@@ -167,6 +220,7 @@ export default function AITryOnPage() {
     }));
 
     if (next === 4) {
+      resetHistorySaveState();
       generateResult(personImage, clothingImage, mode);
     }
   };
@@ -242,6 +296,7 @@ export default function AITryOnPage() {
   const generateResult = async (person: string | null, cloth: string | null, mode: 'upper_body' | 'full_body') => {
     if (!person || !cloth) return;
 
+    resetHistorySaveState();
     setState(prev => ({ ...prev, isGenerating: true, error: null }));
     setProgress(5); // Start progress at 5%
 
@@ -293,10 +348,35 @@ export default function AITryOnPage() {
     });
     setClothingSource('upload');
     setProgress(0);
+    resetHistorySaveState();
   };
 
   const upperClothes = savedClothes.filter(c => c.clothType === 'upper');
   const lowerClothes = savedClothes.filter(c => c.clothType === 'lower');
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen py-10 px-4 flex flex-col items-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob"></div>
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-[-20%] left-[20%] w-[500px] h-[500px] bg-cyan-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-4000"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-50 animate-blob animation-delay-3000"></div>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600" />
+            <p className="mt-4 text-slate-600">正在检查登录状态...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen py-10 px-4 flex flex-col items-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
