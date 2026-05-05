@@ -105,6 +105,86 @@ body {
     color: var(--lux-muted-foreground);
   }
 
+  .lux-hero-grid {
+    position: relative;
+    background-image:
+      linear-gradient(to right, var(--lux-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--lux-line) 1px, transparent 1px);
+    background-size: 160px 160px;
+    background-position: center;
+  }
+
+  .lux-stage-frame {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
+      var(--lux-surface);
+    border: 1px solid var(--lux-line-strong);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 22px 80px rgba(0, 0, 0, 0.34);
+  }
+
+  .lux-stage-frame::after {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+  }
+
+  .lux-rail {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
+      rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--lux-line);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 14px 48px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .lux-kicker {
+    color: var(--lux-muted-foreground);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+  }
+
+  .lux-divider {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--lux-line) 16%,
+      var(--lux-line-strong) 50%,
+      var(--lux-line) 84%,
+      transparent 100%
+    );
+  }
+
+  .lux-noise {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .lux-noise::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.16) 0, transparent 24%),
+      radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.12) 0, transparent 18%),
+      radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.14) 0, transparent 22%);
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+    z-index: -1;
+  }
+
   .animate-fade-up-blur {
     animation: fade-up-blur 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
