@@ -159,31 +159,38 @@ export default function CanvasPreview({
   };
 
   return (
-    <div className="relative">
-      <canvas ref={canvasRef} />
+    <div className="relative mx-auto w-fit">
+      <div className="overflow-hidden rounded-[1.2rem] border border-white/10 bg-[#f5f5f5] shadow-[0_18px_60px_rgba(0,0,0,0.32)]">
+        <canvas ref={canvasRef} />
+      </div>
 
       {/* 控制面板 */}
-      <div className="absolute bottom-4 left-4 right-4 bg-white rounded-lg shadow-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex space-x-2">
-            <button
-              onClick={clearSelection}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
-            >
-              清除选中
-            </button>
-            <button
-              onClick={saveAsImage}
-              className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
-            >
-              保存图片
-            </button>
-          </div>
-          {selectedItem && (
-            <div className="text-sm text-gray-600">
-              已选中: {clothingItems.find(item => item.id === selectedItem)?.name}
+      <div className="pointer-events-none absolute inset-x-4 bottom-4">
+        <div className="pointer-events-auto rounded-[1.5rem] border border-white/12 bg-black/72 p-3 text-white shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={clearSelection}
+                className="rounded-full border border-white/14 bg-white/[0.08] px-4 py-2 text-sm text-white transition-colors hover:bg-white/[0.14]"
+              >
+                清除选中
+              </button>
+              <button
+                onClick={saveAsImage}
+                className="rounded-full border border-[#d4b16a]/40 bg-[#d4b16a] px-4 py-2 text-sm font-medium text-[#16110a] transition-colors hover:bg-[#e1c07b]"
+              >
+                保存图片
+              </button>
             </div>
-          )}
+            {selectedItem ? (
+              <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/14 bg-white/[0.08] px-3 py-2 text-sm text-white/[0.88] sm:self-auto">
+                <span className="h-2 w-2 rounded-full bg-[#d4b16a]" />
+                已选中: {clothingItems.find(item => item.id === selectedItem)?.name}
+              </div>
+            ) : (
+              <div className="text-sm text-white/55">选择单品后可查看当前编辑对象</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
