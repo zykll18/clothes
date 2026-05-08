@@ -15,32 +15,46 @@ const steps = [
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
   return (
-    <div className="w-full max-w-4xl mx-auto mb-8 px-4">
-      <div className="flex items-center justify-between relative">
-        {/* Connecting Lines */}
-        <div className="absolute top-1/2 left-0 w-full h-0.5 -translate-y-1/2 bg-gray-200 -z-10 rounded"></div>
-        
+    <div className="w-full max-w-6xl mx-auto px-4">
+      <div className="relative flex items-start justify-between gap-3 sm:gap-4">
+        <div className="absolute left-0 right-0 top-[18px] hidden h-px bg-[linear-gradient(90deg,rgba(212,177,106,0.18)_0%,rgba(212,177,106,0.55)_50%,rgba(212,177,106,0.18)_100%)] sm:block" />
+
         {steps.map((step) => {
           const isActive = step.id === currentStep;
           const isCompleted = step.id < currentStep;
-          
+          const stateClass = isActive
+            ? 'text-white'
+            : isCompleted
+              ? 'text-[rgba(255,245,225,0.8)]'
+              : 'text-[rgba(255,245,225,0.45)]';
+
           return (
-            <div key={step.id} className="flex flex-col items-center bg-transparent">
-              <div 
+            <div key={step.id} className="relative flex min-w-0 flex-1 flex-col items-center">
+              <div
                 className={`
-                  text-sm font-medium px-4 py-2 transition-all duration-300 relative
-                  ${isActive ? 'text-blue-600' : isCompleted ? 'text-gray-500' : 'text-gray-400'}
+                  relative z-10 flex h-9 w-9 items-center justify-center rounded-full border text-sm font-medium transition-all duration-300 sm:h-10 sm:w-10
+                  ${isActive
+                    ? 'border-[rgba(212,177,106,0.95)] bg-[rgba(212,177,106,0.18)] text-[rgba(255,248,237,1)] shadow-[0_0_0_6px_rgba(212,177,106,0.08)]'
+                    : isCompleted
+                      ? 'border-[rgba(212,177,106,0.65)] bg-[rgba(255,255,255,0.06)] text-[rgba(248,232,198,0.92)]'
+                      : 'border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,245,225,0.52)]'}
                 `}
               >
-                <span className="whitespace-nowrap text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Step {step.id}: </span>
-                  <span className="sm:hidden">{step.id}. </span>
+                {step.id}
+              </div>
+
+              <div className="mt-3 flex flex-col items-center text-center">
+                <span className={`text-[10px] uppercase tracking-[0.28em] ${stateClass}`}>
+                  0{step.id}
+                </span>
+                <span
+                  className={`
+                    mt-1 text-xs sm:text-sm ${stateClass}
+                    ${isActive ? 'font-medium' : 'font-normal'}
+                  `}
+                >
                   {step.label}
                 </span>
-                {/* Active Indicator Line specific to the tab style in the screenshot */}
-                {isActive && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full mt-1"></div>
-                )}
               </div>
             </div>
           );

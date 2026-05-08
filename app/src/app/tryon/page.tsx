@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { StepIndicator } from '@/components/tryon/StepIndicator';
+import { TryOnSceneShell } from '@/components/tryon/TryOnSceneShell';
 import { UploadArea } from '@/components/tryon/UploadArea';
 import { ResultView } from '@/components/tryon/ResultView';
-import { Shirt, User, Sparkles, Upload, Library } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Library, Shirt, Sparkles, Upload, User } from 'lucide-react';
 
 type AppStep = 1 | 2 | 3 | 4;
 type TryOnUiMode = 'upper_body' | 'full_body';
@@ -29,6 +30,46 @@ interface AppState {
   error: string | null;
   mode: TryOnUiMode;
 }
+
+const sceneCopy: Record<
+  AppStep,
+  {
+    eyebrow: string;
+    title: string;
+    description: string;
+    asideTitle: string;
+    asideBody: string;
+  }
+> = {
+  1: {
+    eyebrow: 'Look 01 / Muse Setup',
+    title: '先建立你的试穿轮廓。',
+    description: '上传一张清晰的人像照片，光线平稳、姿态自然，后续成衣叠合会更准确。',
+    asideTitle: '拍摄建议',
+    asideBody: '优先使用正面半身或全身照，避免强逆光、遮挡与过度滤镜，给系统保留清晰的肩线和身形。',
+  },
+  2: {
+    eyebrow: 'Look 02 / Wardrobe Casting',
+    title: '为这一幕挑选本次主角。',
+    description: '你可以上传一件新单品，或直接从衣橱里提取已保存的款式，保持衣物主体完整可见。',
+    asideTitle: '衣橱切换',
+    asideBody: '上传适合新拍单品，衣橱适合复用既有商品图。系统会沿用你当前选择的来源进入生成流程。',
+  },
+  3: {
+    eyebrow: 'Look 03 / Silhouette Direction',
+    title: '决定这次试穿的镜头语言。',
+    description: '根据衣物类别选择半身或全身试穿，让生成阶段匹配正确的服装结构。',
+    asideTitle: '模式选择',
+    asideBody: '上装建议使用半身试穿，连衣裙、下装或成套造型建议使用全身试穿，以减少轮廓误差。',
+  },
+  4: {
+    eyebrow: 'Look 04 / Atelier Render',
+    title: '等待成片出场。',
+    description: '系统会保留你的当前素材与模式选择，生成完成后你仍可保存试衣历史或直接重试。',
+    asideTitle: '渲染说明',
+    asideBody: '生成阶段会持续轮询任务状态。若出现失败或超时，页面会保留错误语义与重试入口。',
+  },
+};
 
 export default function AITryOnPage() {
   const router = useRouter();
@@ -404,21 +445,155 @@ export default function AITryOnPage() {
 
   const upperClothes = savedClothes.filter(c => c.clothType === 'upper');
   const lowerClothes = savedClothes.filter(c => c.clothType === 'lower');
+  const currentScene = sceneCopy[state.currentStep];
+
+  const sceneAside = (
+    <div className="space-y-6 text-sm text-[var(--lux-muted-foreground)]">
+      <div>
+        <p className="lux-kicker text-[11px]">{currentScene.asideTitle}</p>
+        <p className="mt-3 leading-7">{currentScene.asideBody}</p>
+      </div>
+
+      <div className="lux-divider" />
+
+      <div className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.28em] text-[rgba(255,245,225,0.62)]">
+          Current Sequence
+        </p>
+        <ul className="space-y-3 text-[rgba(255,245,225,0.8)]">
+          {[
+            { id: 1, label: 'Model portrait ready' },
+            { id: 2, label: 'Wardrobe source selected' },
+            { id: 3, label: 'Try-on mode confirmed' },
+            { id: 4, label: 'Result scene generated' },
+          ].map((item) => {
+            const active = item.id === state.currentStep;
+            const done = item.id < state.currentStep;
+
+            return (
+              <li key={item.id} className="flex items-center gap-3">
+                <span
+                  className={`
+                    flex h-7 w-7 items-center justify-center rounded-full border text-[11px]
+                    ${active
+                      ? 'border-[rgba(212,177,106,0.85)] bg-[rgba(212,177,106,0.16)] text-white'
+                      : done
+                        ? 'border-[rgba(212,177,106,0.55)] bg-[rgba(255,255,255,0.06)] text-[rgba(248,232,198,0.88)]'
+                        : 'border-[rgba(255,255,255,0.1)] text-[rgba(255,245,225,0.45)]'}
+                  `}
+                >
+                  {done ? <CheckCircle2 size={14} /> : `0${item.id}`}
+                </span>
+                <span className={active ? 'text-white' : ''}>{item.label}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderClothingSelector = () => {
+    if (clothesLoading) {
+      return (
+        <div className="flex min-h-[20rem] items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border border-[rgba(212,177,106,0.35)] border-t-[rgba(212,177,106,0.95)]" />
+        </div>
+      );
+    }
+
+    if (savedClothes.length === 0) {
+      return (
+        <div className="flex min-h-[20rem] flex-col items-center justify-center rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-6 text-center">
+          <p className="text-lg text-white">衣橱里还没有可用单品</p>
+          <p className="mt-3 max-w-sm text-sm leading-7 text-[var(--lux-muted-foreground)]">
+            返回上传流程新增一件衣服，之后这里会自动成为你的可复用素材库。
+          </p>
+          <button
+            onClick={() => {
+              setShowClothingSelector(false);
+              setClothingSource('upload');
+            }}
+            className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.4)] px-5 py-2 text-sm text-[rgba(255,245,225,0.92)] transition hover:bg-[rgba(255,255,255,0.06)]"
+          >
+            <Upload size={16} />
+            改为上传衣服
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {upperClothes.length > 0 && (
+          <section className="space-y-3">
+            <div>
+              <p className="lux-kicker text-[11px]">Upper Pieces</p>
+              <h3 className="mt-2 text-lg text-white">上装衣橱</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              {upperClothes.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => selectClothingFromSaved(item)}
+                  className="group overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-left transition hover:-translate-y-1 hover:border-[rgba(212,177,106,0.55)]"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden">
+                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,7,9,0.72)] via-transparent to-transparent" />
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="truncate text-sm text-[rgba(255,248,237,0.94)]">{item.name}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {lowerClothes.length > 0 && (
+          <section className="space-y-3">
+            <div>
+              <p className="lux-kicker text-[11px]">Lower Pieces</p>
+              <h3 className="mt-2 text-lg text-white">下装衣橱</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              {lowerClothes.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => selectClothingFromSaved(item)}
+                  className="group overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-left transition hover:-translate-y-1 hover:border-[rgba(212,177,106,0.55)]"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden">
+                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,7,9,0.72)] via-transparent to-transparent" />
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="truncate text-sm text-[rgba(255,248,237,0.94)]">{item.name}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    );
+  };
 
   if (authLoading) {
     return (
-      <div className="min-h-screen py-10 px-4 flex flex-col items-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob"></div>
-          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-[-20%] left-[20%] w-[500px] h-[500px] bg-cyan-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-4000"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-50 animate-blob animation-delay-3000"></div>
+      <div className="lux-page lux-hero-grid relative min-h-screen overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[rgba(212,177,106,0.16)] blur-3xl" />
+          <div className="absolute bottom-[-8rem] right-[-4rem] h-80 w-80 rounded-full bg-[rgba(158,129,73,0.16)] blur-3xl" />
         </div>
 
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600" />
-            <p className="mt-4 text-slate-600">正在检查登录状态...</p>
+        <div className="flex min-h-[80vh] items-center justify-center">
+          <div className="lux-stage-frame rounded-[2rem] px-10 py-14 text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border border-[rgba(212,177,106,0.3)] border-t-[rgba(212,177,106,0.95)]" />
+            <p className="mt-5 text-sm tracking-[0.24em] text-[var(--lux-muted-foreground)] uppercase">
+              正在检查登录状态
+            </p>
           </div>
         </div>
       </div>
@@ -430,294 +605,280 @@ export default function AITryOnPage() {
   }
 
   return (
-    <div className="min-h-screen py-10 px-4 flex flex-col items-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Background Decorative Blobs */}
-      <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob"></div>
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-[-20%] left-[20%] w-[500px] h-[500px] bg-cyan-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-4000"></div>
-        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-50 animate-blob animation-delay-3000"></div>
+    <div className="lux-page lux-hero-grid relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-12rem] top-[-10rem] h-[32rem] w-[32rem] rounded-full bg-[rgba(212,177,106,0.12)] blur-3xl" />
+        <div className="absolute right-[-8rem] top-[10rem] h-[28rem] w-[28rem] rounded-full bg-[rgba(125,96,55,0.16)] blur-3xl" />
+        <div className="absolute bottom-[-12rem] left-[20%] h-[26rem] w-[26rem] rounded-full bg-[rgba(255,255,255,0.08)] blur-3xl" />
       </div>
 
-      {/* Header */}
-      <header className="text-center mb-6 sm:mb-10 relative z-10 px-4">
-        <h1 className="text-3xl sm:text-4xl font-serif text-slate-900 mb-2 sm:mb-3 tracking-wide drop-shadow-sm">AI 虚拟试衣</h1>
-        <p className="text-slate-600 text-base sm:text-lg">简单4步，看衣服穿在你身上的效果</p>
-      </header>
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+        <header className="animate-fade-up-blur pb-8">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl">
+              <p className="lux-kicker text-[11px] sm:text-xs">Maison Digital Fitting</p>
+              <h1 className="mt-5 font-serif text-4xl italic tracking-[0.04em] text-white sm:text-5xl lg:text-6xl">
+                AI 虚拟试衣叙事场
+              </h1>
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
+                保留当前的上传、生成、轮询与保存逻辑，只把体验重构成一段更完整的时装分镜。
+              </p>
+            </div>
 
-      {/* Stepper */}
-      <StepIndicator currentStep={state.currentStep} />
-
-      {/* Main Card */}
-      <main className="w-full max-w-4xl glass-panel rounded-3xl p-2 sm:p-4 min-h-[500px] flex flex-col relative overflow-hidden transition-all z-10 bg-white/20 backdrop-blur-sm border border-white/30 shadow-xl">
-
-        {/* Step 1: Upload Person */}
-        {state.currentStep === 1 && (
-          <div className="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
-            <UploadArea
-              title="第一步：上传本人照片"
-              subtitle="请上传一张清晰的全身或半身照，背景尽量简单"
-              previewUrl={state.personImage}
-              onFileSelect={(f) => handleFileSelect(f, 'person')}
-            />
+            <div className="lux-rail max-w-sm rounded-[1.75rem] px-5 py-4">
+              <p className="text-xs uppercase tracking-[0.28em] text-[rgba(255,245,225,0.55)]">Powered by</p>
+              <p className="mt-2 text-sm text-[rgba(255,248,237,0.92)]">阿里云 DashScope AI 试衣引擎</p>
+            </div>
           </div>
-        )}
+        </header>
 
-        {/* Step 2: Select Clothing Source */}
-        {state.currentStep === 2 && (
-          <div className="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
-            {showClothingSelector ? (
-              /* Clothing Selector Grid */
-              <div className="flex flex-col h-full p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-medium text-slate-800">从衣橱选择衣服</h3>
-                  <button
-                    onClick={() => {
-                      setShowClothingSelector(false);
-                      setClothingSource('upload');
-                    }}
-                    className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 flex items-center gap-1"
-                  >
-                    <Upload size={16} />
-                    改为上传
-                  </button>
-                </div>
+        <div className="animate-fade-up-blur animation-delay-2000">
+          <StepIndicator currentStep={state.currentStep} />
+        </div>
 
-                {clothesLoading ? (
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <main className="flex-1 py-8">
+          {state.currentStep === 1 && (
+            <TryOnSceneShell
+              eyebrow={currentScene.eyebrow}
+              title={currentScene.title}
+              description={currentScene.description}
+              aside={sceneAside}
+            >
+              <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                <UploadArea
+                  title="Step 01 / 上传本人照片"
+                  subtitle="请上传一张清晰的全身或半身照，背景尽量简洁，便于后续轮廓识别。"
+                  previewUrl={state.personImage}
+                  onFileSelect={(f) => handleFileSelect(f, 'person')}
+                />
+              </div>
+            </TryOnSceneShell>
+          )}
+
+          {state.currentStep === 2 && (
+            <TryOnSceneShell
+              eyebrow={currentScene.eyebrow}
+              title={currentScene.title}
+              description={currentScene.description}
+              aside={sceneAside}
+            >
+              <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                {showClothingSelector ? (
+                  <div className="space-y-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="lux-kicker text-[11px]">Wardrobe Archive</p>
+                        <h3 className="mt-2 text-2xl font-serif italic text-white">从衣橱挑选本次单品</h3>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowClothingSelector(false);
+                          setClothingSource('upload');
+                        }}
+                        className="inline-flex items-center gap-2 self-start rounded-full border border-[rgba(255,255,255,0.14)] px-4 py-2 text-sm text-[rgba(255,245,225,0.88)] transition hover:bg-[rgba(255,255,255,0.06)]"
+                      >
+                        <Upload size={16} />
+                        改为上传
+                      </button>
+                    </div>
+                    {renderClothingSelector()}
                   </div>
-                ) : savedClothes.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-                    <p className="text-slate-500 mb-4">衣橱还没有衣服</p>
-                    <button
-                      onClick={() => {
-                        setShowClothingSelector(false);
-                        setClothingSource('upload');
-                      }}
-                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
-                    >
-                      上传新衣服
-                    </button>
+                ) : clothingSource === 'saved' ? (
+                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+                    <div className="flex min-h-[24rem] items-center justify-center rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-4">
+                      <div className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[rgba(212,177,106,0.35)]">
+                        <img
+                          src={state.clothingImage || ''}
+                          alt="Selected clothing"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute left-4 top-4 rounded-full border border-[rgba(212,177,106,0.38)] bg-[rgba(7,7,9,0.54)] px-3 py-1 text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.84)]">
+                          Wardrobe Pick
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="lux-rail rounded-[1.75rem] p-5">
+                      <p className="lux-kicker text-[11px]">Selection Ready</p>
+                      <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                        已从衣橱载入当前单品。更换衣物后会继续保留后续试穿与保存历史流程。
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowClothingSelector(true);
+                          setClothingSource('saved');
+                          fetchSavedClothes();
+                        }}
+                        className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.4)] px-4 py-2 text-sm text-[rgba(255,245,225,0.92)] transition hover:bg-[rgba(255,255,255,0.06)]"
+                      >
+                        <Library size={16} />
+                        更换衣服
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex-1 overflow-y-auto space-y-4">
-                    {/* Upper Body */}
-                    {upperClothes.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-slate-500 mb-2">👕 上装</h4>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                          {upperClothes.map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => selectClothingFromSaved(item)}
-                              className="relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-400 transition-all group"
-                            >
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all"></div>
-                              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                <p className="text-white text-xs truncate">{item.name}</p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
+                    <div>
+                      <UploadArea
+                        title="Step 02 / 上传衣服照片"
+                        subtitle="衣服照片建议平铺拍摄或挂在衣架上，尽量完整呈现版型与轮廓。"
+                        previewUrl={state.clothingImage}
+                        onFileSelect={(f) => handleFileSelect(f, 'clothing')}
+                      />
+                    </div>
 
-                    {/* Lower Body */}
-                    {lowerClothes.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-slate-500 mb-2">👖 下装</h4>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                          {lowerClothes.map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => selectClothingFromSaved(item)}
-                              className="relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-400 transition-all group"
-                            >
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all"></div>
-                              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                <p className="text-white text-xs truncate">{item.name}</p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="lux-rail rounded-[1.75rem] p-5">
+                      <p className="lux-kicker text-[11px]">Wardrobe Shortcut</p>
+                      <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                        如果这件衣服已经存在于衣橱，直接提取可以减少重复上传，并自动同步单品来源。
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowClothingSelector(true);
+                          setClothingSource('saved');
+                          fetchSavedClothes();
+                        }}
+                        className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.4)] px-4 py-2 text-sm text-[rgba(255,245,225,0.92)] transition hover:bg-[rgba(255,255,255,0.06)]"
+                      >
+                        <Library size={16} />
+                        从衣橱选择
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
-            ) : clothingSource === 'saved' ? (
-              /* Selected from Wardrobe Preview */
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between mb-4 px-4">
-                  <h3 className="text-xl font-medium text-slate-800">已选择衣服</h3>
-                  <button
-                    onClick={() => {
-                      setShowClothingSelector(true);
-                      setClothingSource('saved');
-                      fetchSavedClothes();
-                    }}
-                    className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 flex items-center gap-1"
-                  >
-                    <Library size={16} />
-                    更换衣服
-                  </button>
-                </div>
-                <div className="flex-1 flex items-center justify-center p-4">
-                  <div className="relative w-full max-w-md aspect-[3/4] rounded-2xl overflow-hidden border-2 border-blue-200 shadow-lg">
-                    <img
-                      src={state.clothingImage || ''}
-                      alt="Selected clothing"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-3 left-3 px-3 py-1 bg-blue-500 text-white text-sm rounded-full">
-                      来自衣橱
-                    </div>
+            </TryOnSceneShell>
+          )}
+
+          {state.currentStep === 3 && (
+            <TryOnSceneShell
+              eyebrow={currentScene.eyebrow}
+              title={currentScene.title}
+              description={currentScene.description}
+              aside={sceneAside}
+            >
+              <div className="grid gap-4 lg:grid-cols-2">
+                <button
+                  onClick={() => setState(prev => ({ ...prev, mode: 'upper_body' }))}
+                  className={`
+                    rounded-[1.75rem] border p-7 text-left transition duration-300
+                    ${state.mode === 'upper_body'
+                      ? 'border-[rgba(212,177,106,0.7)] bg-[rgba(212,177,106,0.08)] shadow-[0_24px_80px_rgba(0,0,0,0.24)]'
+                      : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] hover:-translate-y-1 hover:border-[rgba(212,177,106,0.4)]'}
+                  `}
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[rgba(255,255,255,0.04)] text-[rgba(255,245,225,0.88)]">
+                    <User size={28} />
                   </div>
-                </div>
+                  <h3 className="mt-6 text-2xl font-serif italic text-white">半身试穿</h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                    适用于 T 恤、衬衫、外套等上装，以肩线和胸腰比例为重点进行合成。
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => setState(prev => ({ ...prev, mode: 'full_body' }))}
+                  className={`
+                    rounded-[1.75rem] border p-7 text-left transition duration-300
+                    ${state.mode === 'full_body'
+                      ? 'border-[rgba(212,177,106,0.7)] bg-[rgba(212,177,106,0.08)] shadow-[0_24px_80px_rgba(0,0,0,0.24)]'
+                      : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] hover:-translate-y-1 hover:border-[rgba(212,177,106,0.4)]'}
+                  `}
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[rgba(255,255,255,0.04)] text-[rgba(255,245,225,0.88)]">
+                    <Shirt size={28} />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-serif italic text-white">全身试穿</h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                    适用于连衣裙、下装与成套造型，让系统按完整轮廓完成服装替换。
+                  </p>
+                </button>
               </div>
-            ) : (
-              /* Upload Area */
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between mb-4 px-4">
-                  <h3 className="text-xl font-medium text-slate-800">上传衣服照片</h3>
+            </TryOnSceneShell>
+          )}
+
+          {state.currentStep === 4 && (
+            <TryOnSceneShell
+              eyebrow={currentScene.eyebrow}
+              title={currentScene.title}
+              description={currentScene.description}
+              aside={sceneAside}
+            >
+              <div className="animate-in fade-in duration-700">
+                <ResultView
+                  isGenerating={state.isGenerating}
+                  resultImage={state.generatedImage}
+                  error={state.error}
+                  onRetry={() => generateResult(state.personImage, state.clothingImage, state.mode)}
+                  onSaveHistory={handleSaveHistory}
+                  isSavingHistory={isSavingHistory}
+                  historySaved={historySaved}
+                  historySaveError={historySaveError}
+                  progress={progress}
+                />
+              </div>
+            </TryOnSceneShell>
+          )}
+        </main>
+
+        {state.currentStep !== 4 ? (
+          <div className="animate-fade-up-blur pb-8">
+            <div className="lux-rail flex flex-col gap-4 rounded-[1.75rem] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                {state.currentStep === 1 && '上传你的形象参考，完成本次试穿分镜的第一幕。'}
+                {state.currentStep === 2 && '确认服装来源后进入轮廓选择，当前不会改动任何生成逻辑。'}
+                {state.currentStep === 3 && '模式确认后将直接沿用现有 `generateResult` 与任务轮询流程。'}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {state.currentStep > 1 && (
                   <button
-                    onClick={() => {
-                      setShowClothingSelector(true);
-                      setClothingSource('saved');
-                      fetchSavedClothes();
-                    }}
-                    className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 flex items-center gap-1"
+                    onClick={prevStep}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] px-5 py-3 text-sm text-[rgba(255,245,225,0.9)] transition hover:bg-[rgba(255,255,255,0.06)]"
                   >
-                    <Library size={16} />
-                    从衣橱选择
+                    <ArrowLeft size={16} />
+                    上一步
                   </button>
-                </div>
-                <div className="flex-1">
-                  <UploadArea
-                    title=""
-                    subtitle="衣服照片最好平铺拍摄或挂在衣架上"
-                    previewUrl={state.clothingImage}
-                    onFileSelect={(f) => handleFileSelect(f, 'clothing')}
-                  />
-                </div>
+                )}
+
+                <button
+                  onClick={nextStep}
+                  disabled={isNextDisabled()}
+                  className={`
+                    inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition
+                    ${isNextDisabled()
+                      ? 'cursor-not-allowed border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] text-[rgba(255,245,225,0.34)]'
+                      : 'border border-[rgba(212,177,106,0.4)] bg-[linear-gradient(135deg,rgba(212,177,106,0.24),rgba(212,177,106,0.08))] text-white hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,rgba(212,177,106,0.34),rgba(212,177,106,0.12))]'}
+                  `}
+                >
+                  {state.currentStep === 3 ? (
+                    <>
+                      <Sparkles size={16} />
+                      开始生成
+                    </>
+                  ) : (
+                    <>
+                      下一幕
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
               </div>
-            )}
+            </div>
           </div>
-        )}
-
-        {/* Step 3: Select Mode */}
-        {state.currentStep === 3 && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 sm:gap-8 animate-in fade-in slide-in-from-right-4 duration-500 py-6 sm:py-12 px-4">
-            <h3 className="text-xl sm:text-2xl font-medium text-slate-800">选择试穿模式</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full max-w-2xl px-0 sm:px-8">
+        ) : state.generatedImage ? (
+          <div className="pb-8">
+            <div className="flex justify-center">
               <button
-                onClick={() => setState(prev => ({ ...prev, mode: 'upper_body' }))}
-                className={`
-                  p-6 sm:p-8 rounded-2xl border transition-all flex flex-col items-center gap-3 sm:gap-4 group backdrop-blur-sm
-                  ${state.mode === 'upper_body'
-                    ? 'border-blue-400 bg-blue-100/40 shadow-lg shadow-blue-100/40 scale-[1.02]'
-                    : 'border-white/50 bg-white/20 hover:bg-white/40 hover:shadow-md'}
-                `}
+                onClick={resetAll}
+                className="inline-flex items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] px-6 py-3 text-sm text-[rgba(255,245,225,0.92)] transition hover:bg-[rgba(255,255,255,0.06)]"
               >
-                <div className={`p-3 sm:p-4 rounded-full ${state.mode === 'upper_body' ? 'bg-blue-500 text-white' : 'bg-white/60 text-slate-500'}`}>
-                  <User size={28} className="sm:w-8 sm:h-8" />
-                </div>
-                <div className="text-center">
-                  <h4 className="text-base sm:text-lg font-semibold text-slate-800">半身试穿</h4>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1">适用于 T恤、衬衫、外套</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setState(prev => ({ ...prev, mode: 'full_body' }))}
-                className={`
-                  p-6 sm:p-8 rounded-2xl border transition-all flex flex-col items-center gap-3 sm:gap-4 group backdrop-blur-sm
-                  ${state.mode === 'full_body'
-                    ? 'border-blue-400 bg-blue-100/40 shadow-lg shadow-blue-100/40 scale-[1.02]'
-                    : 'border-white/50 bg-white/20 hover:bg-white/40 hover:shadow-md'}
-                `}
-              >
-                 <div className={`p-3 sm:p-4 rounded-full ${state.mode === 'full_body' ? 'bg-blue-500 text-white' : 'bg-white/60 text-slate-500'}`}>
-                  <Shirt size={28} className="sm:w-8 sm:h-8" />
-                </div>
-                <div className="text-center">
-                  <h4 className="text-base sm:text-lg font-semibold text-slate-800">全身试穿</h4>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1">适用于 连衣裙、套装</p>
-                </div>
+                再试一次
               </button>
             </div>
           </div>
-        )}
-
-        {/* Step 4: Result */}
-        {state.currentStep === 4 && (
-          <div className="flex-1 animate-in fade-in duration-700">
-             <ResultView
-               isGenerating={state.isGenerating}
-               resultImage={state.generatedImage}
-               error={state.error}
-               onRetry={() => generateResult(state.personImage, state.clothingImage, state.mode)}
-               onSaveHistory={handleSaveHistory}
-               isSavingHistory={isSavingHistory}
-               historySaved={historySaved}
-               historySaveError={historySaveError}
-               progress={progress}
-             />
-          </div>
-        )}
-
-        {/* Footer Navigation within Card */}
-        {state.currentStep !== 4 && (
-          <div className="p-4 sm:p-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 border-t border-white/20">
-            {state.currentStep > 1 && (
-              <button
-                onClick={prevStep}
-                className="w-full sm:w-auto px-8 py-2.5 rounded-lg border border-slate-300/40 bg-white/20 text-slate-700 hover:bg-white/40 transition-all font-medium sm:min-w-[120px] backdrop-blur-sm"
-              >
-                上一步
-              </button>
-            )}
-
-            <button
-              onClick={nextStep}
-              disabled={isNextDisabled()}
-              className={`
-                w-full sm:w-auto px-8 py-2.5 rounded-lg text-white font-medium sm:min-w-[120px] shadow-lg transition-all backdrop-blur-sm flex items-center justify-center gap-2
-                ${isNextDisabled()
-                  ? 'bg-blue-300/70 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 shadow-blue-200/50 transform hover:-translate-y-0.5'}
-              `}
-            >
-              {state.currentStep === 3 ? (
-                <>
-                  <Sparkles size={18} />
-                  开始生成
-                </>
-              ) : '下一步'}
-            </button>
-          </div>
-        )}
-      </main>
-
-      {/* Restart Button for Result Step */}
-      {state.currentStep === 4 && state.generatedImage && (
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={resetAll}
-            className="px-6 py-3 border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-          >
-            再试一次
-          </button>
-        </div>
-      )}
-
-      {/* Global Footer */}
-      <footer className="mt-12 text-center text-slate-500 text-sm relative z-10">
-        <p>Powered by 阿里云 DashScope AI 试衣</p>
-      </footer>
+        ) : null}
+      </div>
     </div>
   );
 }
