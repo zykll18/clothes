@@ -2,9 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/jwt';
 
-interface JWTPayload {
-  userId: string;
-  email: string;
+type TryOnHistoryPayload = {
+  personImageUrl: string;
+  clothImageUrl: string;
+  keepClothImageUrl?: string | null;
+  resultImageUrl: string;
+  clothType: 'upper' | 'lower' | 'full';
+  tryOnMode: 'replace' | 'overlay';
+};
+
+function isTryOnHistoryPayload(value: unknown): value is TryOnHistoryPayload {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const keepClothImageUrl = candidate.keepClothImageUrl;
+
+  return (
+    typeof candidate.personImageUrl === 'string' &&
+    typeof candidate.clothImageUrl === 'string' &&
+    (keepClothImageUrl === undefined || keepClothImageUrl === null || typeof keepClothImageUrl === 'string') &&
+    typeof candidate.resultImageUrl === 'string' &&
+    (candidate.clothType === 'upper' || candidate.clothType === 'lower' || candidate.clothType === 'full') &&
+    (candidate.tryOnMode === 'replace' || candidate.tryOnMode === 'overlay')
+  );
 }
 
 /**
@@ -21,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload = verifyToken(token) as JWTPayload | null;
+    const payload = verifyToken(token);
     if (!payload) {
       return NextResponse.json(
         { error: '登录已过期，请重新登录' },
@@ -29,9 +51,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = payload.userId;
+    const rawBody: unknown = await request.json();
+    if (!isTryOnHistoryPayload(rawBody)) {
+      return NextResponse.json(
+        { error: '缺少必要参数' },
+        { status: 400 }
+      );
+    }
 
-    const body = await request.json();
     const {
       personImageUrl,
       clothImageUrl,
@@ -39,23 +66,15 @@ export async function POST(request: NextRequest) {
       resultImageUrl,
       clothType,
       tryOnMode,
-    } = body;
-
-    // 验证必填参数
-    if (!personImageUrl || !clothImageUrl || !resultImageUrl || !clothType || !tryOnMode) {
-      return NextResponse.json(
-        { error: '缺少必要参数' },
-        { status: 400 }
-      );
-    }
+    } = rawBody;
 
     // 保存试衣历史记录
     const history = await prisma.tryOnHistory.create({
       data: {
-        userId,
+        userId: payload.userId,
         personImageUrl,
         clothImageUrl,
-        keepClothImageUrl: keepClothImageUrl || null,
+        keepClothImageUrl: keepClothImageUrl ?? null,
         resultImageUrl,
         clothType,
         tryOnMode,
@@ -91,15 +110,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const payload = verifyToken(token) as JWTPayload | null;
+    const payload = verifyToken(token);
     if (!payload) {
       return NextResponse.json(
         { error: '登录已过期，请重新登录' },
         { status: 401 }
       );
     }
-
-    const userId = payload.userId;
 
     // 获取 URL 参数
     const { searchParams } = new URL(request.url);
@@ -109,13 +126,13 @@ export async function GET(request: NextRequest) {
     // 查询历史记录
     const [history, total] = await Promise.all([
       prisma.tryOnHistory.findMany({
-        where: { userId },
+        where: { userId: payload.userId },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
       }),
       prisma.tryOnHistory.count({
-        where: { userId },
+        where: { userId: payload.userId },
       }),
     ]);
 

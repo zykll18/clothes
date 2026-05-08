@@ -8,6 +8,9 @@ import { ResultView } from '@/components/tryon/ResultView';
 import { Shirt, User, Sparkles, Upload, Library } from 'lucide-react';
 
 type AppStep = 1 | 2 | 3 | 4;
+type TryOnUiMode = 'upper_body' | 'full_body';
+type PersistedClothType = 'upper' | 'lower';
+type PersistedTryOnMode = 'replace';
 
 interface ClothingItem {
   id: string;
@@ -24,7 +27,7 @@ interface AppState {
   generatedImage: string | null;
   isGenerating: boolean;
   error: string | null;
-  mode: 'upper_body' | 'full_body';
+  mode: TryOnUiMode;
 }
 
 export default function AITryOnPage() {
@@ -47,9 +50,9 @@ export default function AITryOnPage() {
   const [progress, setProgress] = useState(0);
 
   // History save state
-  const [, setIsSavingHistory] = useState(false);
-  const [, setHistorySaved] = useState(false);
-  const [, setHistorySaveError] = useState<string | null>(null);
+  const [isSavingHistory, setIsSavingHistory] = useState(false);
+  const [historySaved, setHistorySaved] = useState(false);
+  const [historySaveError, setHistorySaveError] = useState<string | null>(null);
 
   // Clothing selection state
   const [savedClothes, setSavedClothes] = useState<ClothingItem[]>([]);
@@ -210,6 +213,10 @@ export default function AITryOnPage() {
     setHistorySaveError(null);
   };
 
+  const getHistoryClothType = (mode: TryOnUiMode): PersistedClothType => {
+    return mode === 'upper_body' ? 'upper' : 'lower';
+  };
+
   const nextStep = () => {
     const next = (state.currentStep + 1) as AppStep;
     const { personImage, clothingImage, mode } = state;
@@ -327,6 +334,50 @@ export default function AITryOnPage() {
         isGenerating: false,
         error: getErrorMessage(error, '网络错误，请稍后重试')
       }));
+    }
+  };
+
+  const handleSaveHistory = async () => {
+    if (
+      !state.personImage ||
+      !state.clothingImage ||
+      !state.generatedImage ||
+      isSavingHistory ||
+      historySaved
+    ) {
+      return;
+    }
+
+    setIsSavingHistory(true);
+    setHistorySaveError(null);
+
+    try {
+      const response = await fetch('/api/tryon-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personImageUrl: state.personImage,
+          clothImageUrl: state.clothingImage,
+          keepClothImageUrl: null,
+          resultImageUrl: state.generatedImage,
+          clothType: getHistoryClothType(state.mode),
+          tryOnMode: 'replace' as PersistedTryOnMode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data?.error === 'string' ? data.error : '保存试衣历史失败'
+        );
+      }
+
+      setHistorySaved(true);
+    } catch (error: unknown) {
+      setHistorySaveError(getErrorMessage(error, '保存试衣历史失败'));
+    } finally {
+      setIsSavingHistory(false);
     }
   };
 
@@ -609,6 +660,10 @@ export default function AITryOnPage() {
                resultImage={state.generatedImage}
                error={state.error}
                onRetry={() => generateResult(state.personImage, state.clothingImage, state.mode)}
+               onSaveHistory={handleSaveHistory}
+               isSavingHistory={isSavingHistory}
+               historySaved={historySaved}
+               historySaveError={historySaveError}
                progress={progress}
              />
           </div>
