@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import NextImage from 'next/image';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { StepIndicator } from '@/components/tryon/StepIndicator';
@@ -540,7 +540,7 @@ export default function AITryOnPage() {
                   className="group overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-left transition hover:-translate-y-1 hover:border-[rgba(212,177,106,0.55)]"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
-                    <Image
+                    <NextImage
                       src={item.imageUrl}
                       alt={item.name}
                       fill
@@ -572,7 +572,7 @@ export default function AITryOnPage() {
                   className="group overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-left transition hover:-translate-y-1 hover:border-[rgba(212,177,106,0.55)]"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
-                    <Image
+                    <NextImage
                       src={item.imageUrl}
                       alt={item.name}
                       fill
@@ -700,7 +700,7 @@ export default function AITryOnPage() {
                   <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
                     <div className="flex min-h-[24rem] items-center justify-center rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-4">
                       <div className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[rgba(212,177,106,0.35)]">
-                        <Image
+                        <NextImage
                           src={state.clothingImage || ''}
                           alt="Selected clothing"
                           fill
