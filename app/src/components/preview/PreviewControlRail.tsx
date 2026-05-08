@@ -1,4 +1,4 @@
-import type { ChangeEvent } from 'react';
+import { useRef, type ChangeEvent } from 'react';
 import { ImagePlus, Plus, Shirt } from 'lucide-react';
 import { PreviewClothingItem } from '@/types';
 
@@ -13,13 +13,15 @@ export function PreviewControlRail({
   clothingItems,
   onBackgroundUpload,
 }: PreviewControlRailProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <aside className="lux-rail rounded-[2rem] p-5 sm:p-6">
       <div>
         <p className="lux-kicker text-[11px]">Control Rail</p>
         <h2 className="mt-3 font-heading text-3xl italic text-white">场景与衣橱</h2>
         <p className="mt-3 text-sm leading-7 text-muted-lux">
-          保留当前上传与单品能力，只将操作区整理为更适合编辑台的纵向布局。
+          保留当前上传、列表浏览与添加入口，只将操作区整理为更适合编辑台的纵向布局。
         </p>
       </div>
 
@@ -31,24 +33,28 @@ export function PreviewControlRail({
           <p className="lux-kicker text-[10px]">Backdrop Upload</p>
         </div>
 
-        <label className="lux-stage-frame block cursor-pointer rounded-[1.5rem] p-4 transition-transform duration-200 hover:-translate-y-0.5">
-          <span className="sr-only">选择照片</span>
+        <div className="lux-stage-frame rounded-[1.5rem] p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-white">上传模特照片</p>
               <p className="mt-2 text-sm text-muted-lux">支持 image/*，用于主舞台背景。</p>
             </div>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs tracking-[0.2em] text-white/80 uppercase">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-full border border-white/15 bg-white/[0.08] px-4 py-2 text-xs tracking-[0.2em] text-white/85 uppercase transition-colors hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4b16a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111]"
+            >
               Select
-            </span>
+            </button>
           </div>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             onChange={onBackgroundUpload}
             className="sr-only"
           />
-        </label>
+        </div>
 
         {backgroundImage ? (
           <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5">
@@ -60,7 +66,7 @@ export function PreviewControlRail({
           </div>
         ) : (
           <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/[0.03] px-4 py-6 text-sm text-muted-lux">
-            暂无背景图。上传后会立即出现在主舞台中。
+            暂无背景图。上传后会立即显示在主舞台中。
           </div>
         )}
       </section>
@@ -70,13 +76,13 @@ export function PreviewControlRail({
       <section>
         <div className="flex items-center gap-2 text-white">
           <Shirt className="h-4 w-4 text-[#d4b16a]" />
-          <p className="lux-kicker text-[10px]">Wardrobe Edit</p>
+          <p className="lux-kicker text-[10px]">Wardrobe List</p>
         </div>
         <div className="mt-4 space-y-3">
           {clothingItems.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-3 transition-colors hover:bg-white/[0.07]"
+              className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-3"
             >
               <img
                 src={item.imageUrl}
@@ -92,6 +98,9 @@ export function PreviewControlRail({
             </div>
           ))}
         </div>
+        <p className="mt-4 text-sm leading-6 text-muted-lux">
+          这里展示当前可用单品清单，主舞台内的选中与保存操作保持原有编辑行为。
+        </p>
       </section>
 
       <div className="mt-6">

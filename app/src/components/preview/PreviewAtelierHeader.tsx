@@ -18,7 +18,7 @@ export function PreviewAtelierHeader({
             在摄影棚里微调整套造型。
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-lux sm:text-base">
-            上传模特底图，将选中的单品拖入主舞台，围绕光线、层次与轮廓完成最终定稿。
+            上传模特底图，在主舞台中查看当前造型排版，围绕光线、层次与轮廓完成最终定稿。
           </p>
         </div>
 
@@ -38,7 +38,7 @@ export function PreviewAtelierHeader({
             </div>
             <p className="mt-3 text-2xl text-white">{itemCount}</p>
             <p className="mt-2 text-sm text-muted-lux">
-              当前舞台可用单品，保留原有拖拽与编辑能力。
+              当前舞台可用单品列表，供造型查看与导出前确认。
             </p>
           </div>
         </div>
