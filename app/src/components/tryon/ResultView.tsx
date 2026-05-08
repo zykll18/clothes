@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
-import { AlertCircle, CheckCircle2, Download, RefreshCw, Save } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Download, RefreshCw, Save, Sparkles } from 'lucide-react';
 
 interface ResultViewProps {
   isGenerating: boolean;
@@ -29,128 +29,173 @@ export const ResultView: React.FC<ResultViewProps> = ({
 
   if (isGenerating) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        {/* Circular Progress Indicator */}
-        <div className="relative w-24 h-24 mx-auto mb-6">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={`${progress * 2.83} 283`}
-              className="transition-all duration-500"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xl font-bold text-blue-600">{progress}%</span>
+      <div className="relative overflow-hidden rounded-[2rem] border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-14 sm:px-10 sm:py-16">
+        <div className="absolute inset-x-[15%] top-0 h-40 rounded-full bg-[rgba(212,177,106,0.1)] blur-[110px]" />
+        <div className="absolute inset-y-10 left-8 w-px bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.16),transparent)]" />
+        <div className="absolute inset-y-10 right-8 w-px bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.16),transparent)]" />
+
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
+          <p className="text-xs uppercase tracking-[0.32em] text-[rgba(212,177,106,0.72)]">Atelier Processing</p>
+
+          <div className="relative mt-8 flex h-36 w-36 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[radial-gradient(circle_at_top,rgba(212,177,106,0.22),transparent_58%),rgba(255,255,255,0.03)] shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
+            <div className="absolute inset-3 rounded-full border border-[rgba(255,255,255,0.08)]" />
+            <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="4" />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="rgba(212,177,106,0.96)"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={`${progress * 2.83} 283`}
+                className="transition-all duration-500"
+              />
+            </svg>
+            <div className="relative flex flex-col items-center gap-2">
+              <Sparkles className="h-6 w-6 text-[rgba(255,245,225,0.9)]" />
+              <span className="text-3xl font-semibold text-white">{progress}%</span>
+            </div>
+          </div>
+
+          <h3 className="mt-8 text-3xl font-serif italic text-white sm:text-4xl">成片正在暗房显影。</h3>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
+            AI 正在融合轮廓、服装结构与光影细节。当前进度与既有轮询逻辑保持不变。
+          </p>
+
+          <div className="mt-8 grid w-full gap-3 text-left sm:grid-cols-3">
+            {['Muse aligned', 'Wardrobe mapped', 'Render finishing'].map((label, index) => (
+              <div
+                key={label}
+                className={`
+                  rounded-[1.4rem] border px-4 py-4 text-sm
+                  ${progress >= [34, 67, 100][index]
+                    ? 'border-[rgba(212,177,106,0.34)] bg-[rgba(212,177,106,0.08)] text-[rgba(255,245,225,0.9)]'
+                    : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[var(--lux-muted-foreground)]'}
+                `}
+              >
+                <p className="text-[10px] uppercase tracking-[0.24em]">Phase 0{index + 1}</p>
+                <p className="mt-3">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
-        <h3 className="text-xl font-medium text-slate-700">正在生成试穿效果...</h3>
-        <p className="text-slate-500 mt-2">AI 正在进行图像融合，请稍候</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
-        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-500" />
+      <div className="relative overflow-hidden rounded-[2rem] border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-6 py-14 text-center sm:px-10 sm:py-16">
+        <div className="absolute inset-x-[18%] top-0 h-32 rounded-full bg-[rgba(255,255,255,0.08)] blur-[100px]" />
+
+        <div className="relative mx-auto max-w-2xl">
+          <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[rgba(255,255,255,0.05)] text-[rgba(255,245,225,0.9)] shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+            <AlertCircle className="h-8 w-8" />
+          </div>
+          <p className="mt-6 text-xs uppercase tracking-[0.3em] text-[rgba(212,177,106,0.72)]">Render Interrupted</p>
+          <h3 className="mt-3 text-3xl font-serif italic text-white">这一幕没有顺利输出。</h3>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">{error}</p>
+
+          <button
+            onClick={onRetry}
+            className="mt-8 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.38)] bg-[rgba(255,255,255,0.05)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.94)] transition hover:bg-[rgba(255,255,255,0.08)]"
+          >
+            <RefreshCw size={18} />
+            重新生成
+          </button>
         </div>
-        <h3 className="text-xl font-medium text-slate-800 mb-2">生成失败</h3>
-        <p className="text-slate-500 max-w-md mb-8">{error}</p>
-        <button 
-          onClick={onRetry}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <RefreshCw size={18} />
-          重试
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <div className="relative w-full max-w-2xl bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-        <img
-          src={resultImage || ''}
-          alt="Generated Result"
-          className="w-full h-auto rounded-lg"
-        />
+    <div className="flex flex-col items-center">
+      <div className="w-full max-w-4xl">
+        <div className="mb-4 text-center">
+          <p className="text-xs uppercase tracking-[0.32em] text-[rgba(212,177,106,0.72)]">Final Look</p>
+          <h3 className="mt-3 text-3xl font-serif italic text-white sm:text-4xl">生成结果已进入主舞台。</h3>
+        </div>
+
+        <div className="lux-stage-frame lux-noise relative overflow-hidden rounded-[2rem] p-3 sm:p-4">
+          <div className="absolute inset-x-[12%] top-0 h-24 rounded-full bg-[rgba(212,177,106,0.12)] blur-[90px]" />
+          <div className="relative overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.28)]">
+            <img
+              src={resultImage || ''}
+              alt="Generated Result"
+              className="h-auto w-full rounded-[1.5rem] object-contain"
+            />
+          </div>
+        </div>
       </div>
 
-      {hasSaveControls && historySaved && (
-        <div className="mt-6 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+      {hasSaveControls && historySaved ? (
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.32)] bg-[rgba(212,177,106,0.08)] px-4 py-3 text-sm text-[rgba(255,245,225,0.9)]">
           <CheckCircle2 size={16} />
           <span>已保存到历史记录</span>
         </div>
-      )}
+      ) : null}
 
-      {hasSaveControls && historySaveError && !historySaved && (
-        <div className="mt-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+      {hasSaveControls && historySaveError && !historySaved ? (
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm text-[rgba(255,232,214,0.84)]">
           <AlertCircle size={16} />
           <span>{historySaveError}</span>
         </div>
-      )}
+      ) : null}
 
       <div className="mt-8 flex flex-wrap justify-center gap-4">
         <button
           onClick={onRetry}
-          className="px-6 py-3 border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
+          className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.9)] transition hover:bg-[rgba(255,255,255,0.08)]"
         >
-          <RefreshCw size={20} />
+          <RefreshCw size={18} />
           重新试穿
         </button>
 
-        {hasSaveControls && (
+        {hasSaveControls ? (
           <button
             onClick={onSaveHistory}
             disabled={!resultImage || isSavingHistory || historySaved}
-            className="px-6 py-3 rounded-lg font-medium shadow-lg shadow-blue-200 flex items-center gap-2 transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-6 py-3 text-sm font-medium text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.22)] disabled:border-[rgba(255,255,255,0.12)] disabled:bg-[rgba(255,255,255,0.05)] disabled:text-[rgba(255,245,225,0.46)] disabled:hover:bg-[rgba(255,255,255,0.05)]"
           >
             {isSavingHistory ? (
               <>
-                <RefreshCw size={20} className="animate-spin" />
+                <RefreshCw size={18} className="animate-spin" />
                 保存中...
               </>
             ) : historySaved ? (
               <>
-                <CheckCircle2 size={20} />
+                <CheckCircle2 size={18} />
                 已保存
               </>
             ) : (
               <>
-                <Save size={20} />
+                <Save size={18} />
                 保存到历史
               </>
             )}
           </button>
-        )}
+        ) : null}
 
         <a
           href={resultImage || '#'}
           download="try-on-result.png"
-          className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-200 flex items-center gap-2"
+          className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-white px-6 py-3 text-sm font-medium text-black transition hover:bg-[rgba(255,245,225,0.92)]"
         >
-          <Download size={20} />
+          <Download size={18} />
           下载图片
         </a>
 
-        {hasSaveControls && historySaved && (
+        {hasSaveControls && historySaved ? (
           <Link
             href="/profile"
-            className="px-6 py-3 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors font-medium flex items-center gap-2"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.9)] transition hover:bg-[rgba(255,255,255,0.08)]"
           >
-            <CheckCircle2 size={20} />
+            <CheckCircle2 size={18} />
             查看个人主页
           </Link>
-        )}
+        ) : null}
       </div>
     </div>
   );
