@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { StepIndicator } from '@/components/tryon/StepIndicator';
@@ -539,7 +540,13 @@ export default function AITryOnPage() {
                   className="group overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-left transition hover:-translate-y-1 hover:border-[rgba(212,177,106,0.55)]"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
-                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.name}
+                      fill
+                      unoptimized
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,7,9,0.72)] via-transparent to-transparent" />
                   </div>
                   <div className="px-4 py-3">
@@ -565,7 +572,13 @@ export default function AITryOnPage() {
                   className="group overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-left transition hover:-translate-y-1 hover:border-[rgba(212,177,106,0.55)]"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
-                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.name}
+                      fill
+                      unoptimized
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,7,9,0.72)] via-transparent to-transparent" />
                   </div>
                   <div className="px-4 py-3">
@@ -687,10 +700,12 @@ export default function AITryOnPage() {
                   <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
                     <div className="flex min-h-[24rem] items-center justify-center rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-4">
                       <div className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[rgba(212,177,106,0.35)]">
-                        <img
+                        <Image
                           src={state.clothingImage || ''}
                           alt="Selected clothing"
-                          className="h-full w-full object-cover"
+                          fill
+                          unoptimized
+                          className="object-cover"
                         />
                         <div className="absolute left-4 top-4 rounded-full border border-[rgba(212,177,106,0.38)] bg-[rgba(7,7,9,0.54)] px-3 py-1 text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.84)]">
                           Wardrobe Pick
