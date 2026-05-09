@@ -62,38 +62,51 @@ export default function PreviewPage() {
             hasBackgroundImage={Boolean(backgroundImage)}
           />
 
-          <div className="grid gap-8 xl:grid-cols-[22rem_minmax(0,1fr)] xl:items-start">
+          <div className="grid gap-8 xl:grid-cols-[20rem_minmax(0,1fr)] xl:items-start">
             <PreviewControlRail
               backgroundImage={backgroundImage}
               clothingItems={clothingItems}
               onBackgroundUpload={handleBackgroundUpload}
             />
 
-            <div className="lux-stage-frame lux-noise rounded-[2rem] p-4 sm:p-6 lg:p-8">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="lux-kicker text-[11px]">Main Stage</p>
-                  <h2 className="mt-3 font-heading text-3xl italic text-white sm:text-4xl">
-                    实时搭配定妆台
+            <div className="lux-stage-frame lux-noise rounded-[2rem] p-4 sm:p-6 lg:p-8 xl:p-9">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-3xl">
+                  <p className="lux-kicker text-[11px]">Refinement Stage</p>
+                  <h2 className="mt-3 font-heading text-3xl italic text-white sm:text-4xl lg:text-[2.8rem]">
+                    生成之后，在这里把造型修到能出片。
                   </h2>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-lux sm:text-base">
-                    保持现有 Fabric 编辑行为不变，只强化摄影棚式舞台边框、信息层级与操作可读性。
+                    保持现有 Fabric 编辑行为不变，只把这一站重新整理成真正的摄影棚定稿台:
+                    右侧专注构图、层次与轮廓，左侧只保留必要控制与成片摘要。
                   </p>
                 </div>
 
-                <div className="lux-rail rounded-[1.5rem] px-4 py-3">
-                  <p className="lux-kicker text-[10px]">Canvas Format</p>
-                  <p className="mt-2 text-sm text-white/90">800 × 1200 editorial frame</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="lux-rail rounded-[1.5rem] px-4 py-3.5">
+                    <p className="lux-kicker text-[10px]">Canvas Format</p>
+                    <p className="mt-2 text-sm text-white/90">800 × 1200 editorial frame</p>
+                  </div>
+                  <div className="lux-rail rounded-[1.5rem] px-4 py-3.5">
+                    <p className="lux-kicker text-[10px]">Current Pass</p>
+                    <p className="mt-2 text-sm text-white/90">
+                      {backgroundImage ? 'Backdrop aligned' : 'Awaiting backdrop'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <div className="lux-divider my-6 sm:my-8" />
 
-              <div className="rounded-[1.75rem] border border-white/10 bg-[#0a0a0a] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:p-5">
+              <div className="rounded-[1.9rem] border border-white/10 bg-[#0a0a0a] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:p-5 lg:p-6">
                 <div className="overflow-hidden rounded-[1.35rem] border border-white/8 bg-[#111]">
-                  <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs tracking-[0.22em] text-white/45 uppercase">
+                  <div className="flex flex-col gap-2 border-b border-white/10 px-4 py-3 text-xs tracking-[0.22em] text-white/45 uppercase sm:flex-row sm:items-center sm:justify-between">
                     <span>Atelier View</span>
                     <span>{backgroundImage ? 'Backdrop Live' : 'Backdrop Pending'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1 border-b border-white/8 px-4 py-3 text-xs text-white/58 sm:flex-row sm:items-center sm:justify-between">
+                    <p>Fine-tune placement, overlap, and negative space before export.</p>
+                    <p>{clothingItems.length} styled piece{clothingItems.length === 1 ? '' : 's'} in frame</p>
                   </div>
                   <div className="flex justify-center bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%),linear-gradient(180deg,#151515_0%,#090909_100%)] p-3 sm:p-5">
                     <CanvasPreview
