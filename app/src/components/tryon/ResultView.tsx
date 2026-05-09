@@ -34,37 +34,39 @@ export const ResultView: React.FC<ResultViewProps> = ({
         <div className="absolute inset-y-10 left-8 w-px bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.16),transparent)]" />
         <div className="absolute inset-y-10 right-8 w-px bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.16),transparent)]" />
 
-        <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
-          <p className="text-xs uppercase tracking-[0.32em] text-[rgba(212,177,106,0.72)]">Atelier Processing</p>
+        <div className="relative mx-auto flex max-w-4xl flex-col gap-10">
+          <div className="flex flex-col items-center text-center">
+            <p className="text-xs uppercase tracking-[0.32em] text-[rgba(212,177,106,0.72)]">Atelier Processing</p>
 
-          <div className="relative mt-8 flex h-36 w-36 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[radial-gradient(circle_at_top,rgba(212,177,106,0.22),transparent_58%),rgba(255,255,255,0.03)] shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
-            <div className="absolute inset-3 rounded-full border border-[rgba(255,255,255,0.08)]" />
-            <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="4" />
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="rgba(212,177,106,0.96)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeDasharray={`${progress * 2.83} 283`}
-                className="transition-all duration-500"
-              />
-            </svg>
-            <div className="relative flex flex-col items-center gap-2">
-              <Sparkles className="h-6 w-6 text-[rgba(255,245,225,0.9)]" />
-              <span className="text-3xl font-semibold text-white">{progress}%</span>
+            <div className="relative mt-8 flex h-36 w-36 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[radial-gradient(circle_at_top,rgba(212,177,106,0.22),transparent_58%),rgba(255,255,255,0.03)] shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
+              <div className="absolute inset-3 rounded-full border border-[rgba(255,255,255,0.08)]" />
+              <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="4" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  fill="none"
+                  stroke="rgba(212,177,106,0.96)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeDasharray={`${progress * 2.83} 283`}
+                  className="transition-all duration-500"
+                />
+              </svg>
+              <div className="relative flex flex-col items-center gap-2">
+                <Sparkles className="h-6 w-6 text-[rgba(255,245,225,0.9)]" />
+                <span className="text-3xl font-semibold text-white">{progress}%</span>
+              </div>
             </div>
+
+            <h3 className="mt-8 text-3xl font-serif italic text-white sm:text-4xl">成片正在暗房显影。</h3>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
+              AI 正在融合轮廓、服装结构与光影细节。当前进度与既有轮询逻辑保持不变。
+            </p>
           </div>
 
-          <h3 className="mt-8 text-3xl font-serif italic text-white sm:text-4xl">成片正在暗房显影。</h3>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
-            AI 正在融合轮廓、服装结构与光影细节。当前进度与既有轮询逻辑保持不变。
-          </p>
-
-          <div className="mt-8 grid w-full gap-3 text-left sm:grid-cols-3">
+          <div className="grid gap-3 text-left sm:grid-cols-3">
             {['Muse aligned', 'Wardrobe mapped', 'Render finishing'].map((label, index) => (
               <div
                 key={label}
@@ -98,13 +100,15 @@ export const ResultView: React.FC<ResultViewProps> = ({
           <h3 className="mt-3 text-3xl font-serif italic text-white">这一幕没有顺利输出。</h3>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">{error}</p>
 
-          <button
-            onClick={onRetry}
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.38)] bg-[rgba(255,255,255,0.05)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.94)] transition hover:bg-[rgba(255,255,255,0.08)]"
-          >
-            <RefreshCw size={18} />
-            重新生成
-          </button>
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={onRetry}
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.38)] bg-[rgba(255,255,255,0.05)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.94)] transition hover:bg-[rgba(255,255,255,0.08)]"
+            >
+              <RefreshCw size={18} />
+              再试一次
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -113,9 +117,12 @@ export const ResultView: React.FC<ResultViewProps> = ({
   return (
     <div className="flex flex-col items-center">
       <div className="w-full max-w-4xl">
-        <div className="mb-4 text-center">
+        <div className="mb-5 text-center">
           <p className="text-xs uppercase tracking-[0.32em] text-[rgba(212,177,106,0.72)]">Final Look</p>
           <h3 className="mt-3 text-3xl font-serif italic text-white sm:text-4xl">生成结果已进入主舞台。</h3>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
+            先确认这一版成片是否成立，再决定保存、下载或回到上一幕重新生成。
+          </p>
         </div>
 
         <div className="lux-stage-frame lux-noise relative overflow-hidden rounded-[2rem] p-3 sm:p-4">
@@ -128,74 +135,74 @@ export const ResultView: React.FC<ResultViewProps> = ({
             />
           </div>
         </div>
-      </div>
-
-      {hasSaveControls && historySaved ? (
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.32)] bg-[rgba(212,177,106,0.08)] px-4 py-3 text-sm text-[rgba(255,245,225,0.9)]">
-          <CheckCircle2 size={16} />
-          <span>已保存到历史记录</span>
-        </div>
-      ) : null}
-
-      {hasSaveControls && historySaveError && !historySaved ? (
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm text-[rgba(255,232,214,0.84)]">
-          <AlertCircle size={16} />
-          <span>{historySaveError}</span>
-        </div>
-      ) : null}
-
-      <div className="mt-8 flex flex-wrap justify-center gap-4">
-        <button
-          onClick={onRetry}
-          className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.9)] transition hover:bg-[rgba(255,255,255,0.08)]"
-        >
-          <RefreshCw size={18} />
-          重新试穿
-        </button>
-
-        {hasSaveControls ? (
-          <button
-            onClick={onSaveHistory}
-            disabled={!resultImage || isSavingHistory || historySaved}
-            className="inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-6 py-3 text-sm font-medium text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.22)] disabled:border-[rgba(255,255,255,0.12)] disabled:bg-[rgba(255,255,255,0.05)] disabled:text-[rgba(255,245,225,0.46)] disabled:hover:bg-[rgba(255,255,255,0.05)]"
-          >
-            {isSavingHistory ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" />
-                保存中...
-              </>
-            ) : historySaved ? (
-              <>
-                <CheckCircle2 size={18} />
-                已保存
-              </>
-            ) : (
-              <>
-                <Save size={18} />
-                保存到历史
-              </>
-            )}
-          </button>
-        ) : null}
-
-        <a
-          href={resultImage || '#'}
-          download="try-on-result.png"
-          className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-white px-6 py-3 text-sm font-medium text-black transition hover:bg-[rgba(255,245,225,0.92)]"
-        >
-          <Download size={18} />
-          下载图片
-        </a>
 
         {hasSaveControls && historySaved ? (
-          <Link
-            href="/profile"
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.32)] bg-[rgba(212,177,106,0.08)] px-4 py-3 text-sm text-[rgba(255,245,225,0.9)]">
+            <CheckCircle2 size={16} />
+            <span>已保存到历史记录</span>
+          </div>
+        ) : null}
+
+        {hasSaveControls && historySaveError && !historySaved ? (
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm text-[rgba(255,232,214,0.84)]">
+            <AlertCircle size={16} />
+            <span>{historySaveError}</span>
+          </div>
+        ) : null}
+
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <a
+            href={resultImage || '#'}
+            download="try-on-result.png"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-white px-6 py-3 text-sm font-medium text-black transition hover:bg-[rgba(255,245,225,0.92)]"
+          >
+            <Download size={18} />
+            下载图片
+          </a>
+
+          {hasSaveControls ? (
+            <button
+              onClick={onSaveHistory}
+              disabled={!resultImage || isSavingHistory || historySaved}
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-6 py-3 text-sm font-medium text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.22)] disabled:border-[rgba(255,255,255,0.12)] disabled:bg-[rgba(255,255,255,0.05)] disabled:text-[rgba(255,245,225,0.46)] disabled:hover:bg-[rgba(255,255,255,0.05)]"
+            >
+              {isSavingHistory ? (
+                <>
+                  <RefreshCw size={18} className="animate-spin" />
+                  保存中...
+                </>
+              ) : historySaved ? (
+                <>
+                  <CheckCircle2 size={18} />
+                  已保存
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  保存到历史
+                </>
+              )}
+            </button>
+          ) : null}
+
+          <button
+            onClick={onRetry}
             className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.9)] transition hover:bg-[rgba(255,255,255,0.08)]"
           >
-            <CheckCircle2 size={18} />
-            查看个人主页
-          </Link>
-        ) : null}
+            <RefreshCw size={18} />
+            重新试穿
+          </button>
+
+          {hasSaveControls && historySaved ? (
+            <Link
+              href="/profile"
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-6 py-3 text-sm font-medium text-[rgba(255,245,225,0.9)] transition hover:bg-[rgba(255,255,255,0.08)]"
+            >
+              <CheckCircle2 size={18} />
+              查看个人主页
+            </Link>
+          ) : null}
+        </div>
       </div>
     </div>
   );
