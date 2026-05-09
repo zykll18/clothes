@@ -43,32 +43,32 @@ const sceneCopy: Record<
   }
 > = {
   1: {
-    eyebrow: 'Look 01 / Muse Setup',
-    title: '先建立你的试穿轮廓。',
-    description: '上传一张清晰的人像照片，光线平稳、姿态自然，后续成衣叠合会更准确。',
-    asideTitle: '拍摄建议',
-    asideBody: '优先使用正面半身或全身照，避免强逆光、遮挡与过度滤镜，给系统保留清晰的肩线和身形。',
+    eyebrow: 'Scene 01 / Muse Setup',
+    title: '先让你的轮廓进入镜头。',
+    description: '上传一张清晰的人像照片，让后续单品叠合沿着你的姿态与身形自然展开。',
+    asideTitle: '入镜建议',
+    asideBody: '优先使用正面半身或全身照，避免强逆光、遮挡与过度滤镜，给系统保留清晰的肩线、腰线与站姿。',
   },
   2: {
-    eyebrow: 'Look 02 / Wardrobe Casting',
-    title: '为这一幕挑选本次主角。',
-    description: '你可以上传一件新单品，或直接从衣橱里提取已保存的款式，保持衣物主体完整可见。',
-    asideTitle: '衣橱切换',
-    asideBody: '上传适合新拍单品，衣橱适合复用既有商品图。系统会沿用你当前选择的来源进入生成流程。',
+    eyebrow: 'Scene 02 / Wardrobe Casting',
+    title: '为这次出场选定主角单品。',
+    description: '上传新的服装素材，或从既有衣橱里调用一件成衣，让这一幕先确定造型核心。',
+    asideTitle: '选款方式',
+    asideBody: '新拍单品适合上传进入本次流程，已整理过的商品图更适合直接从衣橱提取。系统会沿用你当前选择的来源进入生成。',
   },
   3: {
-    eyebrow: 'Look 03 / Silhouette Direction',
-    title: '决定这次试穿的镜头语言。',
-    description: '根据衣物类别选择半身或全身试穿，让生成阶段匹配正确的服装结构。',
-    asideTitle: '模式选择',
-    asideBody: '上装建议使用半身试穿，连衣裙、下装或成套造型建议使用全身试穿，以减少轮廓误差。',
+    eyebrow: 'Scene 03 / Silhouette Direction',
+    title: '决定这一套造型的镜头比例。',
+    description: '根据单品类型选择半身或全身试穿，让系统按正确的服装结构与画面重心生成成片。',
+    asideTitle: '镜头比例',
+    asideBody: '上装更适合半身构图，连衣裙、下装与成套造型更适合全身呈现，这样轮廓会更完整，成片也更稳定。',
   },
   4: {
-    eyebrow: 'Look 04 / Atelier Render',
+    eyebrow: 'Scene 04 / Atelier Render',
     title: '等待成片出场。',
-    description: '系统会保留你的当前素材与模式选择，生成完成后你仍可保存试衣历史或直接重试。',
-    asideTitle: '渲染说明',
-    asideBody: '生成阶段会持续轮询任务状态。若出现失败或超时，页面会保留错误语义与重试入口。',
+    description: '系统会保留你当前的人像、单品与镜头设定，生成完成后仍可保存这次试穿记录或直接重试。',
+    asideTitle: '渲染阶段',
+    asideBody: '生成时会持续轮询任务状态。若出现失败或超时，页面会保留错误语义与重试入口，不打断这条出片流程。',
   },
 };
 
@@ -459,14 +459,14 @@ export default function AITryOnPage() {
 
       <div className="space-y-3">
         <p className="text-xs uppercase tracking-[0.28em] text-[rgba(255,245,225,0.62)]">
-          Current Sequence
+          Scene Progression
         </p>
         <ul className="space-y-3 text-[rgba(255,245,225,0.8)]">
           {[
-            { id: 1, label: 'Model portrait ready' },
-            { id: 2, label: 'Wardrobe source selected' },
-            { id: 3, label: 'Try-on mode confirmed' },
-            { id: 4, label: 'Result scene generated' },
+            { id: 1, label: 'Muse portrait in place' },
+            { id: 2, label: 'Wardrobe lead selected' },
+            { id: 3, label: 'Silhouette direction set' },
+            { id: 4, label: 'Atelier render revealed' },
           ].map((item) => {
             const active = item.id === state.currentStep;
             const done = item.id < state.currentStep;
@@ -626,27 +626,51 @@ export default function AITryOnPage() {
       </div>
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-8">
-        <header className="animate-fade-up-blur pb-8">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <header className="animate-fade-up-blur pb-6">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-end">
             <div className="max-w-3xl">
-              <p className="lux-kicker text-[11px] sm:text-xs">Maison Digital Fitting</p>
-              <h1 className="mt-5 font-serif text-4xl italic tracking-[0.04em] text-white sm:text-5xl lg:text-6xl">
+              <p className="lux-kicker text-[11px] sm:text-xs">Scene Entry / Digital Fitting Maison</p>
+              <h1 className="mt-4 font-serif text-4xl italic tracking-[0.04em] text-white sm:text-5xl lg:text-6xl">
                 AI 虚拟试衣叙事场
               </h1>
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
-                保留当前的上传、生成、轮询与保存逻辑，只把体验重构成一段更完整的时装分镜。
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[rgba(255,248,237,0.82)] sm:text-base">
+                从首页的品牌镜头进入这里后，流程不再像表单，而像一段逐幕推进的试穿 backstage。
+              </p>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                上传人物、挑选单品、确认镜头比例，再让现有生成与历史保存逻辑接手出片。
               </p>
             </div>
 
-            <div className="lux-rail max-w-sm rounded-[1.75rem] px-5 py-4">
-              <p className="text-xs uppercase tracking-[0.28em] text-[rgba(255,245,225,0.55)]">Powered by</p>
-              <p className="mt-2 text-sm text-[rgba(255,248,237,0.92)]">阿里云 DashScope AI 试衣引擎</p>
+            <div className="lux-rail rounded-[1.75rem] px-5 py-4">
+              <p className="text-xs uppercase tracking-[0.28em] text-[rgba(255,245,225,0.48)]">Engine Note</p>
+              <p className="mt-2 text-sm text-[rgba(255,248,237,0.84)]">阿里云 DashScope AI 试衣引擎</p>
+              <p className="mt-2 text-xs leading-6 text-[rgba(255,245,225,0.52)]">
+                负责当前试穿生成、任务轮询与结果回传。
+              </p>
             </div>
           </div>
         </header>
 
         <div className="animate-fade-up-blur animation-delay-2000">
-          <StepIndicator currentStep={state.currentStep} />
+          <div className="lux-rail rounded-[1.5rem] px-4 py-4 sm:px-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.26em] text-[rgba(255,245,225,0.46)]">
+                  Current Scene
+                </p>
+                <p className="mt-2 text-lg font-serif italic text-white sm:text-xl">
+                  {currentScene.eyebrow}
+                </p>
+              </div>
+
+              <p className="max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                保留当前四步逻辑，但把每一步压成一个主动作，让你像推进一组造型镜头一样前进。
+              </p>
+            </div>
+
+            <div className="lux-divider my-4" />
+            <StepIndicator currentStep={state.currentStep} />
+          </div>
         </div>
 
         <main className="flex-1 py-8">
@@ -659,8 +683,8 @@ export default function AITryOnPage() {
             >
               <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                 <UploadArea
-                  title="Step 01 / 上传本人照片"
-                  subtitle="请上传一张清晰的全身或半身照，背景尽量简洁，便于后续轮廓识别。"
+                  title="Scene 01 / 上传人物照片"
+                  subtitle="请上传一张清晰的半身或全身照，让系统先捕捉你的轮廓、姿态与站姿。"
                   previewUrl={state.personImage}
                   onFileSelect={(f) => handleFileSelect(f, 'person')}
                 />
@@ -676,12 +700,48 @@ export default function AITryOnPage() {
               aside={sceneAside}
             >
               <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="mb-6 flex flex-col gap-3 rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.48)]">
+                      Wardrobe Lead
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                      这一幕只需要定下本次成片的核心单品。来源可以是新上传，也可以来自既有衣橱。
+                    </p>
+                  </div>
+                  <div className="inline-flex self-start rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] p-1">
+                    <span
+                      className={`
+                        inline-flex items-center rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]
+                        ${clothingSource === 'upload'
+                          ? 'bg-[rgba(212,177,106,0.18)] text-[rgba(255,248,237,0.94)]'
+                          : 'text-[rgba(255,245,225,0.52)]'}
+                      `}
+                    >
+                      Upload Source
+                    </span>
+                    <span
+                      className={`
+                        inline-flex items-center rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]
+                        ${clothingSource === 'saved'
+                          ? 'bg-[rgba(212,177,106,0.18)] text-[rgba(255,248,237,0.94)]'
+                          : 'text-[rgba(255,245,225,0.52)]'}
+                      `}
+                    >
+                      Wardrobe Archive
+                    </span>
+                  </div>
+                </div>
+
                 {showClothingSelector ? (
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <p className="lux-kicker text-[11px]">Wardrobe Archive</p>
-                        <h3 className="mt-2 text-2xl font-serif italic text-white">从衣橱挑选本次单品</h3>
+                        <h3 className="mt-2 text-2xl font-serif italic text-white">从衣橱挑选这一幕的主角</h3>
+                        <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                          直接从既有素材里挑一件成衣，让本次试穿延续同一套品牌素材体系。
+                        </p>
                       </div>
                       <button
                         onClick={() => {
@@ -697,9 +757,9 @@ export default function AITryOnPage() {
                     {renderClothingSelector()}
                   </div>
                 ) : clothingSource === 'saved' ? (
-                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
-                    <div className="flex min-h-[24rem] items-center justify-center rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-4">
-                      <div className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[rgba(212,177,106,0.35)]">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+                      <div className="flex min-h-[24rem] items-center justify-center rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-4">
+                        <div className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[rgba(212,177,106,0.35)]">
                         <NextImage
                           src={state.clothingImage || ''}
                           alt="Selected clothing"
@@ -714,9 +774,9 @@ export default function AITryOnPage() {
                     </div>
 
                     <div className="lux-rail rounded-[1.75rem] p-5">
-                      <p className="lux-kicker text-[11px]">Selection Ready</p>
+                      <p className="lux-kicker text-[11px]">Casting Locked</p>
                       <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                        已从衣橱载入当前单品。更换衣物后会继续保留后续试穿与保存历史流程。
+                        当前单品已从衣橱载入。你仍可随时替换主角服装，后续试穿与保存历史流程不会改变。
                       </p>
                       <button
                         onClick={() => {
@@ -735,8 +795,8 @@ export default function AITryOnPage() {
                   <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
                     <div>
                       <UploadArea
-                        title="Step 02 / 上传衣服照片"
-                        subtitle="衣服照片建议平铺拍摄或挂在衣架上，尽量完整呈现版型与轮廓。"
+                        title="Scene 02 / 上传主角单品"
+                        subtitle="衣物建议平铺拍摄或悬挂拍摄，尽量完整呈现版型、肩线和下摆。"
                         previewUrl={state.clothingImage}
                         onFileSelect={(f) => handleFileSelect(f, 'clothing')}
                       />
@@ -745,7 +805,7 @@ export default function AITryOnPage() {
                     <div className="lux-rail rounded-[1.75rem] p-5">
                       <p className="lux-kicker text-[11px]">Wardrobe Shortcut</p>
                       <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                        如果这件衣服已经存在于衣橱，直接提取可以减少重复上传，并自动同步单品来源。
+                        如果这件衣服已经存在于衣橱，直接提取会比重新上传更顺，也能保持既有商品素材的一致性。
                       </p>
                       <button
                         onClick={() => {
@@ -772,6 +832,15 @@ export default function AITryOnPage() {
               description={currentScene.description}
               aside={sceneAside}
             >
+              <div className="mb-6 rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-5 py-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.48)]">
+                  Frame Choice
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                  这一幕不是在选择功能，而是在确认镜头比例。选定后，当前生成逻辑会按相同的人像与单品进入渲染。
+                </p>
+              </div>
+
               <div className="grid gap-4 lg:grid-cols-2">
                 <button
                   onClick={() => setState(prev => ({ ...prev, mode: 'upper_body' }))}
@@ -785,9 +854,12 @@ export default function AITryOnPage() {
                   <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[rgba(255,255,255,0.04)] text-[rgba(255,245,225,0.88)]">
                     <User size={28} />
                   </div>
-                  <h3 className="mt-6 text-2xl font-serif italic text-white">半身试穿</h3>
+                  <p className="mt-6 text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.5)]">
+                    Portrait Frame
+                  </p>
+                  <h3 className="mt-3 text-2xl font-serif italic text-white">半身试穿</h3>
                   <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                    适用于 T 恤、衬衫、外套等上装，以肩线和胸腰比例为重点进行合成。
+                    适合 T 恤、衬衫、外套等上装，让系统把重点放在肩线、领口与胸腰比例。
                   </p>
                 </button>
 
@@ -803,9 +875,12 @@ export default function AITryOnPage() {
                   <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(212,177,106,0.28)] bg-[rgba(255,255,255,0.04)] text-[rgba(255,245,225,0.88)]">
                     <Shirt size={28} />
                   </div>
-                  <h3 className="mt-6 text-2xl font-serif italic text-white">全身试穿</h3>
+                  <p className="mt-6 text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.5)]">
+                    Full Figure
+                  </p>
+                  <h3 className="mt-3 text-2xl font-serif italic text-white">全身试穿</h3>
                   <p className="mt-3 text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                    适用于连衣裙、下装与成套造型，让系统按完整轮廓完成服装替换。
+                    适合连衣裙、下装与成套造型，让系统按完整身形与造型比例完成替换。
                   </p>
                 </button>
               </div>
@@ -839,10 +914,15 @@ export default function AITryOnPage() {
         {state.currentStep !== 4 ? (
           <div className="animate-fade-up-blur pb-8">
             <div className="lux-rail flex flex-col gap-4 rounded-[1.75rem] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-              <div className="text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                {state.currentStep === 1 && '上传你的形象参考，完成本次试穿分镜的第一幕。'}
-                {state.currentStep === 2 && '确认服装来源后进入轮廓选择，当前不会改动任何生成逻辑。'}
-                {state.currentStep === 3 && '模式确认后将直接沿用现有 `generateResult` 与任务轮询流程。'}
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.46)]">
+                  Next Scene Cue
+                </p>
+                <div className="mt-2 text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                  {state.currentStep === 1 && '人物轮廓确认后，下一幕会进入单品 casting，只保留一个主动作继续推进。'}
+                  {state.currentStep === 2 && '主角单品锁定后，下一幕只需要确认镜头比例，现有生成逻辑不会发生变化。'}
+                  {state.currentStep === 3 && '镜头比例确认后，将直接沿用当前 generateResult、轮询与历史保存流程进入出片。'}
+                </div>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -869,7 +949,7 @@ export default function AITryOnPage() {
                   {state.currentStep === 3 ? (
                     <>
                       <Sparkles size={16} />
-                      开始生成
+                      进入成片
                     </>
                   ) : (
                     <>
