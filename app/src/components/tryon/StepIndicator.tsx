@@ -7,55 +7,53 @@ interface StepIndicatorProps {
 }
 
 const steps = [
-  { id: 1, label: '上传照片' },
-  { id: 2, label: '上传衣服' },
-  { id: 3, label: '选择模式' },
-  { id: 4, label: '生成结果' },
+  { id: 1, chapter: 'Scene 01', label: '上传人物' },
+  { id: 2, chapter: 'Scene 02', label: '选择单品' },
+  { id: 3, chapter: 'Scene 03', label: '确认比例' },
+  { id: 4, chapter: 'Scene 04', label: '生成成片' },
 ];
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4">
-      <div className="relative flex items-start justify-between gap-3 sm:gap-4">
-        <div className="absolute left-0 right-0 top-[18px] hidden h-px bg-[linear-gradient(90deg,rgba(212,177,106,0.18)_0%,rgba(212,177,106,0.55)_50%,rgba(212,177,106,0.18)_100%)] sm:block" />
-
-        {steps.map((step) => {
+    <div className="w-full">
+      <div className="grid gap-2.5 sm:grid-cols-4 sm:gap-3">
+        {steps.map((step, index) => {
           const isActive = step.id === currentStep;
           const isCompleted = step.id < currentStep;
-          const stateClass = isActive
-            ? 'text-white'
+          const frameClass = isActive
+            ? 'border-[rgba(212,177,106,0.52)] bg-[rgba(212,177,106,0.12)] text-white shadow-[0_18px_60px_rgba(0,0,0,0.18)]'
             : isCompleted
-              ? 'text-[rgba(255,245,225,0.8)]'
-              : 'text-[rgba(255,245,225,0.45)]';
+              ? 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] text-[rgba(255,245,225,0.86)]'
+              : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] text-[rgba(255,245,225,0.52)]';
+          const dotClass = isActive
+            ? 'bg-[rgba(212,177,106,0.96)] shadow-[0_0_0_6px_rgba(212,177,106,0.12)]'
+            : isCompleted
+              ? 'bg-[rgba(255,245,225,0.84)]'
+              : 'bg-[rgba(255,255,255,0.24)]';
 
           return (
-            <div key={step.id} className="relative flex min-w-0 flex-1 flex-col items-center">
-              <div
-                className={`
-                  relative z-10 flex h-9 w-9 items-center justify-center rounded-full border text-sm font-medium transition-all duration-300 sm:h-10 sm:w-10
-                  ${isActive
-                    ? 'border-[rgba(212,177,106,0.95)] bg-[rgba(212,177,106,0.18)] text-[rgba(255,248,237,1)] shadow-[0_0_0_6px_rgba(212,177,106,0.08)]'
-                    : isCompleted
-                      ? 'border-[rgba(212,177,106,0.65)] bg-[rgba(255,255,255,0.06)] text-[rgba(248,232,198,0.92)]'
-                      : 'border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,245,225,0.52)]'}
-                `}
-              >
-                {step.id}
-              </div>
+            <div key={step.id} className="relative min-w-0">
+              <div className={`rounded-[1.35rem] border px-4 py-4 backdrop-blur-md transition-all duration-300 ${frameClass}`}>
+                <div className="flex items-center gap-3">
+                  <span className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${dotClass}`} />
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-inherit/80">
+                    {step.chapter}
+                  </span>
+                </div>
 
-              <div className="mt-3 flex flex-col items-center text-center">
-                <span className={`text-[10px] uppercase tracking-[0.28em] ${stateClass}`}>
-                  0{step.id}
-                </span>
-                <span
+                <p
                   className={`
-                    mt-1 text-xs sm:text-sm ${stateClass}
-                    ${isActive ? 'font-medium' : 'font-normal'}
+                    mt-4 text-sm leading-6 sm:text-[15px]
+                    ${isActive ? 'font-medium text-white' : 'font-normal text-inherit'}
                   `}
                 >
                   {step.label}
-                </span>
+                </p>
               </div>
+
+              {index < steps.length - 1 ? (
+                <div className="pointer-events-none absolute left-[calc(100%+0.15rem)] top-1/2 hidden h-px w-2 -translate-y-1/2 bg-[linear-gradient(90deg,rgba(212,177,106,0.28),rgba(255,255,255,0.08))] sm:block" />
+              ) : null}
             </div>
           );
         })}
