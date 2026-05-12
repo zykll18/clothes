@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
+import { getClientIdentifier, requireAuth } from '@/lib/api-auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // 阿里云 DashScope API 配置
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
@@ -185,6 +187,30 @@ function getDashScopeTaskId(value: unknown): string | null {
  */
 export async function POST(request: NextRequest) {
   try {
+    const auth = requireAuth(request);
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit({
+      key: `ai-tryon:create:${auth.payload.userId}:${clientId}`,
+      limit: 12,
+      windowMs: 10 * 60 * 1000,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'AI 试衣请求过于频繁，请稍后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+          },
+        }
+      );
+    }
+
     if (!DASHSCOPE_API_KEY) {
       return NextResponse.json(
         { error: '未配置阿里云 API Key，请在 .env 文件中设置 DASHSCOPE_API_KEY' },

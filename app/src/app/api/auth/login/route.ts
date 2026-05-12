@@ -2,9 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
 import { generateToken } from '@/lib/jwt';
+import { getClientIdentifier } from '@/lib/api-auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit({
+      key: `auth:login:${clientId}`,
+      limit: 10,
+      windowMs: 10 * 60 * 1000,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: '登录请求过于频繁，请稍后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+          },
+        }
+      );
+    }
+
     const { email, password } = await request.json();
 
     // 验证必填字段

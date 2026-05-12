@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getClientIdentifier, requireAuth } from '@/lib/api-auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // 阿里云 DashScope API 配置
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
@@ -9,6 +11,30 @@ const DASHSCOPE_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
  */
 export async function GET(request: NextRequest) {
   try {
+    const auth = requireAuth(request);
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit({
+      key: `ai-tryon:status:${auth.payload.userId}:${clientId}`,
+      limit: 120,
+      windowMs: 60 * 1000,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: '任务状态查询过于频繁，请稍后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+          },
+        }
+      );
+    }
+
     if (!DASHSCOPE_API_KEY) {
       return NextResponse.json(
         { error: '未配置阿里云 API Key' },

@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/jwt';
-
-interface JWTPayload {
-  userId: string;
-  email: string;
-}
+import { requireAuth } from '@/lib/api-auth';
 
 /**
  * 删除试衣历史记录
@@ -15,24 +10,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 验证用户身份
-    const token = request.cookies.get('token')?.value;
-    if (!token) {
-      return NextResponse.json(
-        { error: '请先登录' },
-        { status: 401 }
-      );
+    const auth = requireAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
 
-    const payload = verifyToken(token) as JWTPayload | null;
-    if (!payload) {
-      return NextResponse.json(
-        { error: '登录已过期，请重新登录' },
-        { status: 401 }
-      );
-    }
-
-    const userId = payload.userId;
+    const userId = auth.payload.userId;
     const { id } = await params;
 
     // 检查记录是否存在且属于当前用户
