@@ -3,6 +3,7 @@
 import NextImage from 'next/image';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import SharedFlowerBackground from '@/components/shared/SharedFlowerBackground';
 import { StepIndicator } from '@/components/tryon/StepIndicator';
 import { TryOnSceneShell } from '@/components/tryon/TryOnSceneShell';
 import { UploadArea } from '@/components/tryon/UploadArea';
@@ -447,6 +448,7 @@ export default function AITryOnPage() {
   const upperClothes = savedClothes.filter(c => c.clothType === 'upper');
   const lowerClothes = savedClothes.filter(c => c.clothType === 'lower');
   const currentScene = sceneCopy[state.currentStep];
+  const isEntryScene = state.currentStep === 1;
 
   const sceneAside = (
     <div className="space-y-6 text-sm text-[var(--lux-muted-foreground)]">
@@ -596,12 +598,14 @@ export default function AITryOnPage() {
   if (authLoading) {
     return (
       <div className="lux-page lux-hero-grid relative min-h-screen overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[rgba(212,177,106,0.16)] blur-3xl" />
-          <div className="absolute bottom-[-8rem] right-[-4rem] h-80 w-80 rounded-full bg-[rgba(158,129,73,0.16)] blur-3xl" />
+        <SharedFlowerBackground mode="atelier" dimmed />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(4,4,6,0.72),rgba(4,4,6,0.86))]" />
+        <div className="pointer-events-none absolute inset-0 z-10">
+          <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[rgba(212,177,106,0.08)] blur-3xl" />
+          <div className="absolute bottom-[-8rem] right-[-4rem] h-80 w-80 rounded-full bg-[rgba(158,129,73,0.12)] blur-3xl" />
         </div>
 
-        <div className="flex min-h-[80vh] items-center justify-center">
+        <div className="relative z-20 flex min-h-[80vh] items-center justify-center">
           <div className="lux-stage-frame rounded-[2rem] px-10 py-14 text-center">
             <div className="mx-auto h-10 w-10 animate-spin rounded-full border border-[rgba(212,177,106,0.3)] border-t-[rgba(212,177,106,0.95)]" />
             <p className="mt-5 text-sm tracking-[0.24em] text-[var(--lux-muted-foreground)] uppercase">
@@ -618,30 +622,91 @@ export default function AITryOnPage() {
   }
 
   return (
-    <div className="lux-page lux-hero-grid relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-12rem] top-[-10rem] h-[32rem] w-[32rem] rounded-full bg-[rgba(212,177,106,0.12)] blur-3xl" />
-        <div className="absolute right-[-8rem] top-[10rem] h-[28rem] w-[28rem] rounded-full bg-[rgba(125,96,55,0.16)] blur-3xl" />
-        <div className="absolute bottom-[-12rem] left-[20%] h-[26rem] w-[26rem] rounded-full bg-[rgba(255,255,255,0.08)] blur-3xl" />
+    <div className="lux-page lux-hero-grid relative min-h-screen overflow-hidden bg-transparent">
+      <SharedFlowerBackground mode={isEntryScene ? 'hero' : 'atelier'} dimmed={!isEntryScene} />
+
+      <div className="pointer-events-none absolute inset-0 z-10">
+        <div
+          className={`
+            absolute inset-0 transition-[background,opacity] duration-700
+            ${isEntryScene
+              ? 'bg-[linear-gradient(180deg,rgba(4,4,6,0.24),rgba(4,4,6,0.46)_42%,rgba(4,4,6,0.82))]'
+              : 'bg-[linear-gradient(180deg,rgba(4,4,6,0.62),rgba(4,4,6,0.78)_32%,rgba(4,4,6,0.94))]'}
+          `}
+        />
+        <div
+          className={`
+            absolute inset-0 transition-opacity duration-700
+            ${isEntryScene
+              ? 'bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_74%_14%,rgba(212,177,106,0.08),transparent_22%)] opacity-100'
+              : 'bg-[radial-gradient(circle_at_16%_18%,rgba(255,255,255,0.03),transparent_20%),radial-gradient(circle_at_78%_10%,rgba(212,177,106,0.04),transparent_18%)] opacity-100'}
+          `}
+        />
+        <div
+          className={`
+            absolute inset-y-0 left-0 transition-all duration-700
+            ${isEntryScene
+              ? 'w-full bg-gradient-to-r from-black/82 via-black/62 to-transparent sm:w-[82%] lg:w-[60%]'
+              : 'w-full bg-gradient-to-r from-black via-black/96 to-black/55 sm:w-[88%] lg:w-[72%]'}
+          `}
+        />
+        <div
+          className={`
+            absolute inset-x-0 bottom-0 h-48 transition-all duration-700
+            ${isEntryScene
+              ? 'bg-gradient-to-t from-[#050505] via-[#050505]/88 to-transparent'
+              : 'bg-gradient-to-t from-[#050505] via-[#050505]/96 to-transparent'}
+          `}
+        />
+        <div className="absolute left-[-12rem] top-[-10rem] h-[32rem] w-[32rem] rounded-full bg-[rgba(212,177,106,0.08)] blur-3xl" />
+        <div className="absolute right-[-8rem] top-[10rem] h-[28rem] w-[28rem] rounded-full bg-[rgba(125,96,55,0.12)] blur-3xl" />
+        <div className="absolute bottom-[-12rem] left-[20%] h-[26rem] w-[26rem] rounded-full bg-[rgba(255,255,255,0.05)] blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-8">
-        <header className="animate-fade-up-blur pb-6">
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-end">
-            <div className="max-w-3xl">
-              <p className="lux-kicker text-[11px] sm:text-xs">Scene Entry / Digital Fitting Maison</p>
-              <h1 className="mt-4 font-serif text-4xl italic tracking-[0.04em] text-white sm:text-5xl lg:text-6xl">
+      <div
+        className={`
+          pointer-events-none absolute inset-x-0 z-10 mx-auto w-full max-w-7xl px-4 transition-all duration-700 sm:px-6 lg:px-8
+          ${isEntryScene ? 'top-[6.75rem] opacity-60' : 'top-[7.5rem] opacity-40'}
+        `}
+      >
+        <div
+          className={`
+            max-w-sm rounded-[1.5rem] border px-4 py-4 backdrop-blur-md
+            ${isEntryScene
+              ? 'border-[rgba(255,255,255,0.14)] bg-[rgba(8,8,10,0.22)]'
+              : 'border-[rgba(255,255,255,0.08)] bg-[rgba(8,8,10,0.4)]'}
+          `}
+        >
+          <p className="text-[11px] uppercase tracking-[0.28em] text-[rgba(255,245,225,0.46)]">
+            Scene Marker
+          </p>
+          <p className="mt-3 text-base font-serif italic text-white sm:text-lg">
+            {currentScene.eyebrow}
+          </p>
+        </div>
+      </div>
+
+      <div className="relative z-20 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-8 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
+        <header className={`animate-fade-up-blur ${isEntryScene ? 'pb-10 lg:pb-14' : 'pb-6'}`}>
+          <div className={`grid gap-5 ${isEntryScene ? 'xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-end' : 'xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start'}`}>
+            <div className={isEntryScene ? 'max-w-4xl' : 'max-w-3xl'}>
+              <p className="lux-kicker text-[11px] sm:text-xs">
+                {isEntryScene ? 'Scene Entry / Digital Fitting Maison' : 'Operational Stage / Digital Fitting Maison'}
+              </p>
+              <h1 className={`mt-4 font-serif italic tracking-[0.04em] text-white ${isEntryScene ? 'text-4xl sm:text-5xl lg:text-6xl xl:text-[4.6rem] xl:leading-[0.92]' : 'text-4xl sm:text-5xl lg:text-[3.6rem]'}`}>
                 AI 虚拟试衣叙事场
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-[rgba(255,248,237,0.82)] sm:text-base">
-                从首页的品牌镜头进入这里后，流程不再像表单，而像一段逐幕推进的试穿 backstage。
+              <p className={`mt-4 text-sm leading-7 text-[rgba(255,248,237,0.82)] sm:text-base ${isEntryScene ? 'max-w-2xl' : 'max-w-xl'}`}>
+                {isEntryScene
+                  ? '从首页的品牌镜头进入这里后，第一幕只做一件事：让你的轮廓先进入同一条花影与高定光线构成的试穿世界。'
+                  : '人物已入镜，现在进入更克制的操作舞台。后续每一步仍在同一条花影背景里，但视觉重心会让位给造型判断与出片。'}
               </p>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                上传人物、挑选单品、确认镜头比例，再让现有生成与历史保存逻辑接手出片。
+              <p className={`mt-4 text-sm leading-7 text-[var(--lux-muted-foreground)] ${isEntryScene ? 'max-w-3xl' : 'max-w-2xl'}`}>
+                上传人物、挑选单品、确认镜头比例，再让现有生成、轮询与历史保存逻辑接手出片。流程没变，只是舞台变成了与首页同源的花影空间。
               </p>
             </div>
 
-            <div className="lux-rail rounded-[1.75rem] px-5 py-4">
+            <div className={`rounded-[1.75rem] px-5 py-4 backdrop-blur-md ${isEntryScene ? 'border border-[rgba(255,255,255,0.12)] bg-[rgba(8,8,10,0.18)]' : 'lux-rail'}`}>
               <p className="text-xs uppercase tracking-[0.28em] text-[rgba(255,245,225,0.48)]">Engine Note</p>
               <p className="mt-2 text-sm text-[rgba(255,248,237,0.84)]">阿里云 DashScope AI 试衣引擎</p>
               <p className="mt-2 text-xs leading-6 text-[rgba(255,245,225,0.52)]">
@@ -651,9 +716,16 @@ export default function AITryOnPage() {
           </div>
         </header>
 
-        <div className="animate-fade-up-blur animation-delay-2000">
-          <div className="lux-rail rounded-[1.5rem] px-4 py-4 sm:px-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className={`animate-fade-up-blur animation-delay-2000 ${isEntryScene ? 'opacity-85' : ''}`}>
+          <div
+            className={`
+              rounded-[1.5rem] px-4 py-4 backdrop-blur-md sm:px-5
+              ${isEntryScene
+                ? 'border border-[rgba(255,255,255,0.12)] bg-[rgba(8,8,10,0.22)]'
+                : 'lux-rail'}
+            `}
+          >
+            <div className={`flex flex-col gap-4 ${isEntryScene ? 'lg:flex-row lg:items-end lg:justify-between' : 'lg:flex-row lg:items-end lg:justify-between'}`}>
               <div>
                 <p className="text-xs uppercase tracking-[0.26em] text-[rgba(255,245,225,0.46)]">
                   Current Scene
@@ -673,32 +745,47 @@ export default function AITryOnPage() {
           </div>
         </div>
 
-        <main className="flex-1 py-8">
+        <main className={`flex-1 ${isEntryScene ? 'py-10 lg:py-14' : 'py-8'}`}>
           {state.currentStep === 1 && (
-            <TryOnSceneShell
-              eyebrow={currentScene.eyebrow}
-              title={currentScene.title}
-              description={currentScene.description}
-              aside={sceneAside}
-            >
-              <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                <UploadArea
-                  title="Scene 01 / 上传人物照片"
-                  subtitle="请上传一张清晰的半身或全身照，让系统先捕捉你的轮廓、姿态与站姿。"
-                  previewUrl={state.personImage}
-                  onFileSelect={(f) => handleFileSelect(f, 'person')}
-                />
+            <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
+              <div className="rounded-[2rem] border border-[rgba(255,255,255,0.12)] bg-[rgba(8,8,10,0.16)] px-5 py-6 backdrop-blur-md sm:px-7 sm:py-8 lg:px-10 lg:py-10">
+                <div className="max-w-3xl">
+                  <p className="lux-kicker text-[11px]">Scene One / Handoff</p>
+                  <h2 className="mt-4 font-serif text-3xl italic text-white sm:text-4xl lg:text-[3.35rem] lg:leading-[1]">
+                    {currentScene.title}
+                  </h2>
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-[rgba(255,248,237,0.86)] sm:text-base">
+                    {currentScene.description}
+                  </p>
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)]">
+                    这一幕先不给你多余选择，只保留一个上传动作，让人物轮廓先被这条背景世界接住。
+                  </p>
+                </div>
+
+                <div className="mt-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                  <UploadArea
+                    title="Scene 01 / 上传人物照片"
+                    subtitle="请上传一张清晰的半身或全身照，让系统先捕捉你的轮廓、姿态与站姿。"
+                    previewUrl={state.personImage}
+                    onFileSelect={(f) => handleFileSelect(f, 'person')}
+                  />
+                </div>
               </div>
-            </TryOnSceneShell>
+
+              <aside className="rounded-[1.75rem] border border-[rgba(255,255,255,0.12)] bg-[rgba(8,8,10,0.18)] p-5 backdrop-blur-md">
+                {sceneAside}
+              </aside>
+            </div>
           )}
 
           {state.currentStep === 2 && (
-            <TryOnSceneShell
-              eyebrow={currentScene.eyebrow}
-              title={currentScene.title}
-              description={currentScene.description}
-              aside={sceneAside}
-            >
+            <div className="rounded-[2rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(7,7,9,0.5)] px-4 py-5 shadow-[0_32px_120px_rgba(0,0,0,0.36)] backdrop-blur-xl sm:px-5 sm:py-6 lg:px-7 lg:py-7">
+              <TryOnSceneShell
+                eyebrow={currentScene.eyebrow}
+                title={currentScene.title}
+                description={currentScene.description}
+                aside={sceneAside}
+              >
               <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="mb-6 flex flex-col gap-3 rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -822,16 +909,18 @@ export default function AITryOnPage() {
                   </div>
                 )}
               </div>
-            </TryOnSceneShell>
+              </TryOnSceneShell>
+            </div>
           )}
 
           {state.currentStep === 3 && (
-            <TryOnSceneShell
-              eyebrow={currentScene.eyebrow}
-              title={currentScene.title}
-              description={currentScene.description}
-              aside={sceneAside}
-            >
+            <div className="rounded-[2rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(7,7,9,0.52)] px-4 py-5 shadow-[0_32px_120px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:px-5 sm:py-6 lg:px-7 lg:py-7">
+              <TryOnSceneShell
+                eyebrow={currentScene.eyebrow}
+                title={currentScene.title}
+                description={currentScene.description}
+                aside={sceneAside}
+              >
               <div className="mb-6 rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-5 py-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-[rgba(255,245,225,0.48)]">
                   Frame Choice
@@ -884,16 +973,18 @@ export default function AITryOnPage() {
                   </p>
                 </button>
               </div>
-            </TryOnSceneShell>
+              </TryOnSceneShell>
+            </div>
           )}
 
           {state.currentStep === 4 && (
-            <TryOnSceneShell
-              eyebrow={currentScene.eyebrow}
-              title={currentScene.title}
-              description={currentScene.description}
-              aside={sceneAside}
-            >
+            <div className="rounded-[2rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(7,7,9,0.54)] px-4 py-5 shadow-[0_32px_120px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:px-5 sm:py-6 lg:px-7 lg:py-7">
+              <TryOnSceneShell
+                eyebrow={currentScene.eyebrow}
+                title={currentScene.title}
+                description={currentScene.description}
+                aside={sceneAside}
+              >
               <div className="animate-in fade-in duration-700">
                 <ResultView
                   isGenerating={state.isGenerating}
@@ -907,7 +998,8 @@ export default function AITryOnPage() {
                   progress={progress}
                 />
               </div>
-            </TryOnSceneShell>
+              </TryOnSceneShell>
+            </div>
           )}
         </main>
 
