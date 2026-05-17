@@ -1,0 +1,8 @@
+<svg width="768" height="960" viewBox="0 0 768 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="768" height="960" rx="48" fill="#1C2440"/>
+  <rect x="72" y="86" width="624" height="788" rx="36" fill="#243258"/>
+  <path d="M270 166H498L536 440L458 824H386L372 538H396L382 824H310L232 440L270 166Z" fill="#314675"/>
+  <path d="M382 166H386V824H382V166Z" fill="#6179A8"/>
+  <path d="M302 220H466" stroke="#94A6CA" stroke-width="10" stroke-linecap="round"/>
+  <text x="384" y="858" fill="#F4F1E8" font-size="44" font-family="Georgia, serif" text-anchor="middle">Indigo Denim</text>
+</svg>

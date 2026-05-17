@@ -1,61 +1,120 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Sparkles, Shirt, LogOut, Download, Trash2, Plus, Upload, X } from 'lucide-react';
+import {
+  Download,
+  LogOut,
+  Palette,
+  Plus,
+  Shirt,
+  Sparkles,
+  Trash2,
+  Upload,
+  User,
+  X,
+} from 'lucide-react';
+import { DIRECTION_LABELS, type CreatorDirection } from '@/lib/creator-preview';
 
-interface User {
+type BodyType = 'SLIM' | 'REGULAR' | 'ATHLETIC' | 'PLUS_SIZE';
+type ClothingCategory = 'TOP' | 'BOTTOM' | 'DRESS' | 'OUTERWEAR' | 'SHOES' | 'ACCESSORY';
+type ClothingType = 'upper' | 'lower' | 'full';
+
+interface ProfileUser {
   id: string;
   email: string;
   name: string;
   avatar?: string;
   height?: number;
   weight?: number;
-  bodyType?: string;
+  bodyType?: BodyType;
 }
 
-interface TryOnHistory {
+interface CreatorPreviewVariant {
+  id: string;
+  direction: CreatorDirection;
+  sortOrder: number;
+  resultUrl: string;
+  presentationTone: string;
+  selected: boolean;
+}
+
+interface CreatorPreviewSession {
   id: string;
   personImageUrl: string;
-  clothImageUrl: string;
-  keepClothImageUrl?: string;
-  resultImageUrl: string;
-  clothType: string;
-  tryOnMode: string;
+  sourceImageUrl: string;
+  primaryColor: string;
+  directionTags: CreatorDirection[];
+  selectedDirection: CreatorDirection;
   createdAt: string;
+  variants: CreatorPreviewVariant[];
 }
 
 interface ClothingItem {
   id: string;
   name: string;
-  category: string;
-  clothType: string;
+  category: ClothingCategory;
+  clothType: ClothingType;
   imageUrl: string;
   color?: string;
   brand?: string;
   createdAt: string;
 }
 
+const CATEGORY_OPTIONS: Array<{
+  value: ClothingCategory;
+  label: string;
+  clothType: ClothingType;
+}> = [
+  { value: 'OUTERWEAR', label: '外套', clothType: 'upper' },
+  { value: 'TOP', label: '内搭 / 上装', clothType: 'upper' },
+  { value: 'BOTTOM', label: '裤子 / 下装', clothType: 'lower' },
+  { value: 'SHOES', label: '鞋子', clothType: 'lower' },
+  { value: 'ACCESSORY', label: '配饰', clothType: 'full' },
+  { value: 'DRESS', label: '连体 / 套装', clothType: 'full' },
+];
+
+function getBodyTypeLabel(bodyType?: BodyType) {
+  if (bodyType === 'SLIM') return '瘦削';
+  if (bodyType === 'REGULAR') return '标准';
+  if (bodyType === 'ATHLETIC') return '健壮';
+  if (bodyType === 'PLUS_SIZE') return '丰满';
+  return '未设置';
+}
+
+function getCategoryLabel(category: ClothingCategory) {
+  const match = CATEGORY_OPTIONS.find((item) => item.value === category);
+  return match?.label ?? category;
+}
+
+function getSelectedVariant(session: CreatorPreviewSession) {
+  return (
+    session.variants.find((variant) => variant.selected) ||
+    session.variants.find((variant) => variant.direction === session.selectedDirection) ||
+    session.variants[0] ||
+    null
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ProfileUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [history, setHistory] = useState<TryOnHistory[]>([]);
+  const [history, setHistory] = useState<CreatorPreviewSession[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
-
-  // Clothing items state
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
   const [clothingLoading, setClothingLoading] = useState(true);
   const [showAddClothing, setShowAddClothing] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [newClothing, setNewClothing] = useState({
     name: '',
-    clothType: 'upper' as 'upper' | 'lower',
+    category: 'OUTERWEAR' as ClothingCategory,
+    clothType: 'upper' as ClothingType,
     imageUrl: '',
     color: '',
   });
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -65,6 +124,7 @@ export default function ProfilePage() {
           router.push('/auth/login');
           return;
         }
+
         const data = await response.json();
         setUser(data.user);
       } catch (error) {
@@ -76,13 +136,13 @@ export default function ProfilePage() {
 
     const fetchHistory = async () => {
       try {
-        const response = await fetch('/api/tryon-history?limit=10');
+        const response = await fetch('/api/creator-preview/history?limit=12');
         if (response.ok) {
           const data = await response.json();
-          setHistory(data.history || []);
+          setHistory(data.sessions || []);
         }
       } catch (error) {
-        console.error('获取试衣历史失败:', error);
+        console.error('获取内容预演历史失败:', error);
       } finally {
         setHistoryLoading(false);
       }
@@ -96,7 +156,7 @@ export default function ProfilePage() {
           setClothingItems(data.items || []);
         }
       } catch (error) {
-        console.error('获取衣服列表失败:', error);
+        console.error('获取素材库失败:', error);
       } finally {
         setClothingLoading(false);
       }
@@ -116,26 +176,6 @@ export default function ProfilePage() {
     }
   };
 
-  const deleteHistory = async (id: string) => {
-    if (!confirm('确定要删除这条试衣记录吗？')) return;
-
-    try {
-      const response = await fetch(`/api/tryon-history/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setHistory(history.filter(h => h.id !== id));
-      } else {
-        alert('删除失败，请稍后重试');
-      }
-    } catch (error) {
-      console.error('删除试衣历史失败:', error);
-      alert('删除失败，请稍后重试');
-    }
-  };
-
-  // Compress image
   const compressImage = useCallback((file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -143,11 +183,12 @@ export default function ProfilePage() {
 
       img.onload = () => {
         URL.revokeObjectURL(url);
+
         let width = img.width;
         let height = img.height;
         const maxSize = 1024;
-
         const maxDimension = Math.max(width, height);
+
         if (maxDimension > maxSize) {
           const ratio = maxSize / maxDimension;
           width = Math.floor(width * ratio);
@@ -158,14 +199,14 @@ export default function ProfilePage() {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+
         if (!ctx) {
           reject(new Error('无法创建 canvas 上下文'));
           return;
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-        resolve(compressedBase64);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
       };
 
       img.onerror = () => {
@@ -177,8 +218,8 @@ export default function ProfilePage() {
     });
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -194,18 +235,27 @@ export default function ProfilePage() {
     setUploadingImage(true);
     try {
       const compressed = await compressImage(file);
-      setNewClothing(prev => ({ ...prev, imageUrl: compressed }));
-    } catch (err) {
-      console.error('图片处理失败:', err);
+      setNewClothing((previous) => ({ ...previous, imageUrl: compressed }));
+    } catch (error) {
+      console.error('图片处理失败:', error);
       alert('图片处理失败');
     } finally {
       setUploadingImage(false);
     }
   };
 
+  const handleCategoryChange = (category: ClothingCategory) => {
+    const matched = CATEGORY_OPTIONS.find((item) => item.value === category);
+    setNewClothing((previous) => ({
+      ...previous,
+      category,
+      clothType: matched?.clothType ?? previous.clothType,
+    }));
+  };
+
   const handleAddClothing = async () => {
     if (!newClothing.name || !newClothing.imageUrl) {
-      alert('请填写衣服名称并上传图片');
+      alert('请填写素材名称并上传图片');
       return;
     }
 
@@ -216,32 +266,37 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newClothing.name,
+          category: newClothing.category,
           clothType: newClothing.clothType,
           imageUrl: newClothing.imageUrl,
           color: newClothing.color,
-          category: newClothing.clothType === 'upper' ? 'TOP' : 'BOTTOM',
         }),
       });
 
       const data = await response.json();
-
       if (response.ok && data.success) {
-        setClothingItems([data.item, ...clothingItems]);
+        setClothingItems((previous) => [data.item, ...previous]);
         setShowAddClothing(false);
-        setNewClothing({ name: '', clothType: 'upper', imageUrl: '', color: '' });
+        setNewClothing({
+          name: '',
+          category: 'OUTERWEAR',
+          clothType: 'upper',
+          imageUrl: '',
+          color: '',
+        });
       } else {
-        alert(data.error || '添加失败，请检查网络连接');
+        alert(data.error || '添加素材失败，请稍后重试');
       }
     } catch (error) {
-      console.error('添加衣服失败:', error);
-      alert('添加失败: ' + (error instanceof Error ? error.message : '未知错误'));
+      console.error('添加素材失败:', error);
+      alert(`添加失败: ${error instanceof Error ? error.message : '未知错误'}`);
     } finally {
       setIsSaving(false);
     }
   };
 
   const deleteClothing = async (id: string) => {
-    if (!confirm('确定要删除这件衣服吗？')) return;
+    if (!confirm('确定要删除这条素材吗？')) return;
 
     try {
       const response = await fetch(`/api/clothing/${id}`, {
@@ -249,21 +304,40 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
-        setClothingItems(clothingItems.filter(c => c.id !== id));
+        setClothingItems((previous) => previous.filter((item) => item.id !== id));
       } else {
-        alert('删除失败');
+        alert('删除失败，请稍后重试');
       }
     } catch (error) {
-      console.error('删除衣服失败:', error);
-      alert('删除失败');
+      console.error('删除素材失败:', error);
+      alert('删除失败，请稍后重试');
+    }
+  };
+
+  const deleteHistory = async (id: string) => {
+    if (!confirm('确定要删除这条内容预演记录吗？')) return;
+
+    try {
+      const response = await fetch(`/api/creator-preview/history/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setHistory((previous) => previous.filter((item) => item.id !== id));
+      } else {
+        alert('删除失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('删除内容预演历史失败:', error);
+      alert('删除失败，请稍后重试');
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen py-10 px-4 flex flex-col items-center justify-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
           <p className="mt-4 text-slate-600">加载中...</p>
         </div>
       </div>
@@ -272,11 +346,11 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen py-10 px-4 flex flex-col items-center justify-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-xl">
-          <p className="text-slate-600 mb-4">请先登录</p>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
+        <div className="rounded-2xl border border-white/30 bg-white/20 p-8 text-center shadow-xl backdrop-blur-sm">
+          <p className="mb-4 text-slate-600">请先登录</p>
           <Link href="/auth/login">
-            <button className="px-6 py-2 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all">
+            <button className="rounded-lg bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-2 text-white transition-all hover:from-blue-600 hover:to-sky-600">
               去登录
             </button>
           </Link>
@@ -285,40 +359,37 @@ export default function ProfilePage() {
     );
   }
 
-  const upperClothes = clothingItems.filter(c => c.clothType === 'upper');
-  const lowerClothes = clothingItems.filter(c => c.clothType === 'lower');
+  const upperLibrary = clothingItems.filter((item) => item.clothType === 'upper');
+  const lowerLibrary = clothingItems.filter((item) => item.clothType === 'lower');
+  const fullLibrary = clothingItems.filter((item) => item.clothType === 'full');
 
   return (
-    <div className="min-h-screen py-10 px-4 flex flex-col items-center relative w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Background Decorative Blobs */}
-      <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob"></div>
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-[-20%] left-[20%] w-[500px] h-[500px] bg-cyan-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-blob animation-delay-4000"></div>
-        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-50 animate-blob animation-delay-3000"></div>
+    <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
+      <div className="pointer-events-none fixed left-0 top-0 -z-10 h-full w-full">
+        <div className="absolute left-[-10%] top-[-10%] h-[600px] w-[600px] rounded-full bg-blue-300 opacity-60 blur-[100px]" />
+        <div className="absolute right-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-sky-200 opacity-60 blur-[100px]" />
+        <div className="absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-cyan-200 opacity-60 blur-[100px]" />
+        <div className="absolute bottom-[10%] right-[10%] h-[400px] w-[400px] rounded-full bg-indigo-200 opacity-50 blur-[100px]" />
       </div>
 
-      {/* Header */}
-      <header className="text-center mb-10 relative z-10">
-        <h1 className="text-4xl font-serif text-slate-900 mb-3 tracking-wide drop-shadow-sm">个人中心</h1>
-        <p className="text-slate-600 text-lg">管理你的账户和试衣记录</p>
+      <header className="relative z-10 mb-10 text-center">
+        <h1 className="mb-3 text-4xl font-serif tracking-wide text-slate-900 drop-shadow-sm">创作者工作台</h1>
+        <p className="text-lg text-slate-600">管理你的素材库与内容预演记录</p>
       </header>
 
-      {/* Main Content */}
-      <main className="w-full max-w-6xl relative">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
-          {/* User Info Card */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-xl">
+      <main className="relative w-full max-w-6xl">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-1">
+            <div className="rounded-3xl border border-white/30 bg-white/20 p-6 shadow-xl backdrop-blur-sm">
               <div className="text-center">
-                <div className="w-24 h-24 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white/50">
+                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white/50 bg-blue-100">
                   <User size={40} className="text-blue-500" />
                 </div>
                 <h2 className="text-xl font-semibold text-slate-800">{user.name}</h2>
                 <p className="text-slate-500">{user.email}</p>
               </div>
 
-              <div className="mt-6 space-y-3 bg-white/30 rounded-2xl p-4">
+              <div className="mt-6 space-y-3 rounded-2xl bg-white/30 p-4">
                 <div className="flex justify-between">
                   <span className="text-slate-600">身高:</span>
                   <span className="font-medium text-slate-800">{user.height ? `${user.height} cm` : '未设置'}</span>
@@ -329,204 +400,255 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">体型:</span>
-                  <span className="font-medium text-slate-800">
-                    {user.bodyType === 'SLIM' && '瘦削'}
-                    {user.bodyType === 'REGULAR' && '标准'}
-                    {user.bodyType === 'ATHLETIC' && '健壮'}
-                    {user.bodyType === 'PLUS_SIZE' && '丰满'}
-                    {!user.bodyType && '未设置'}
-                  </span>
+                  <span className="font-medium text-slate-800">{getBodyTypeLabel(user.bodyType)}</span>
                 </div>
               </div>
 
               <button
                 onClick={handleLogout}
-                className="w-full mt-6 px-4 py-3 rounded-xl border border-red-300/40 bg-red-50/30 text-red-600 hover:bg-red-50/50 transition-all font-medium flex items-center justify-center gap-2"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-red-300/40 bg-red-50/30 px-4 py-3 font-medium text-red-600 transition-all hover:bg-red-50/50"
               >
                 <LogOut size={18} />
                 登出
               </button>
             </div>
 
-            {/* Quick Actions */}
             <Link href="/tryon">
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer group">
+              <div className="group cursor-pointer rounded-2xl border border-white/30 bg-white/20 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl backdrop-blur-sm">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 shadow-lg shadow-blue-200">
                     <Sparkles size={24} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-800">AI 虚拟试衣</h3>
-                    <p className="text-slate-500 text-sm">AI 自动将衣服穿到你身上</p>
+                    <h3 className="text-lg font-semibold text-slate-800">开始内容预演</h3>
+                    <p className="text-sm text-slate-500">上传人物、选主色、比较三种方向</p>
                   </div>
                 </div>
               </div>
             </Link>
           </div>
 
-          {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* My Clothes Section */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-xl">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <div className="space-y-6 lg:col-span-2">
+            <div className="rounded-3xl border border-white/30 bg-white/20 p-6 shadow-xl backdrop-blur-sm">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-xl font-bold text-slate-800">
                   <Shirt size={24} className="text-blue-500" />
-                  我的衣服
+                  我的素材库
                   <span className="text-sm font-normal text-slate-500">({clothingItems.length}件)</span>
                 </h2>
                 <button
                   onClick={() => setShowAddClothing(true)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all flex items-center gap-2 text-sm"
+                  className="flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm text-white transition-all hover:bg-blue-600"
                 >
                   <Plus size={18} />
-                  添加衣服
+                  添加素材
                 </button>
               </div>
 
-              {/* Clothing Grid */}
               {clothingLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="py-8 text-center">
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
                 </div>
               ) : clothingItems.length === 0 ? (
-                <div className="bg-white/30 rounded-2xl p-8 text-center border border-white/20">
-                  <p className="text-slate-500 mb-4">还没有添加衣服</p>
+                <div className="rounded-2xl border border-white/20 bg-white/30 p-8 text-center">
+                  <p className="mb-4 text-slate-500">还没有添加素材</p>
                   <button
                     onClick={() => setShowAddClothing(true)}
-                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all"
+                    className="rounded-lg bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-2 text-white transition-all hover:from-blue-600 hover:to-sky-600"
                   >
                     添加第一件
                   </button>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* Upper Body */}
-                  {upperClothes.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium text-slate-500 mb-3">👕 上装 ({upperClothes.length})</h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {upperClothes.map((item) => (
-                          <div key={item.id} className="bg-white/30 rounded-xl overflow-hidden border border-white/20 group">
+                  {upperLibrary.length > 0 ? (
+                    <section>
+                      <h3 className="mb-3 text-sm font-medium text-slate-500">上装 / 外套 ({upperLibrary.length})</h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {upperLibrary.map((item) => (
+                          <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
                             <div className="relative aspect-[3/4]">
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
                               <button
                                 onClick={() => deleteClothing(item.id)}
-                                className="absolute top-2 right-2 w-7 h-7 bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-opacity group-hover:opacity-100"
                               >
                                 <Trash2 size={14} />
                               </button>
                             </div>
-                            <div className="p-2">
-                              <p className="text-sm font-medium text-slate-800 truncate">{item.name}</p>
-                              {item.color && <p className="text-xs text-slate-500">{item.color}</p>}
+                            <div className="space-y-1 p-3">
+                              <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
+                              <p className="text-xs text-slate-500">{getCategoryLabel(item.category)}</p>
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    </section>
+                  ) : null}
 
-                  {/* Lower Body */}
-                  {lowerClothes.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium text-slate-500 mb-3">👖 下装 ({lowerClothes.length})</h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {lowerClothes.map((item) => (
-                          <div key={item.id} className="bg-white/30 rounded-xl overflow-hidden border border-white/20 group">
+                  {lowerLibrary.length > 0 ? (
+                    <section>
+                      <h3 className="mb-3 text-sm font-medium text-slate-500">下装 / 鞋子 ({lowerLibrary.length})</h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {lowerLibrary.map((item) => (
+                          <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
                             <div className="relative aspect-[3/4]">
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
                               <button
                                 onClick={() => deleteClothing(item.id)}
-                                className="absolute top-2 right-2 w-7 h-7 bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-opacity group-hover:opacity-100"
                               >
                                 <Trash2 size={14} />
                               </button>
                             </div>
-                            <div className="p-2">
-                              <p className="text-sm font-medium text-slate-800 truncate">{item.name}</p>
-                              {item.color && <p className="text-xs text-slate-500">{item.color}</p>}
+                            <div className="space-y-1 p-3">
+                              <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
+                              <p className="text-xs text-slate-500">{getCategoryLabel(item.category)}</p>
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    </section>
+                  ) : null}
+
+                  {fullLibrary.length > 0 ? (
+                    <section>
+                      <h3 className="mb-3 text-sm font-medium text-slate-500">配饰 / 全身类 ({fullLibrary.length})</h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {fullLibrary.map((item) => (
+                          <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
+                            <div className="relative aspect-[3/4]">
+                              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                              <button
+                                onClick={() => deleteClothing(item.id)}
+                                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                            <div className="space-y-1 p-3">
+                              <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
+                              <p className="text-xs text-slate-500">{getCategoryLabel(item.category)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
                 </div>
               )}
             </div>
 
-            {/* Try-on History */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-xl">
-              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <span className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm">
+            <div className="rounded-3xl border border-white/30 bg-white/20 p-6 shadow-xl backdrop-blur-sm">
+              <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm text-white">
                   {history.length}
                 </span>
-                试衣历史
+                内容预演历史
               </h2>
 
               {historyLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-slate-500 text-sm">加载中...</p>
+                <div className="py-8 text-center">
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+                  <p className="mt-2 text-sm text-slate-500">加载中...</p>
                 </div>
               ) : history.length === 0 ? (
-                <div className="bg-white/30 rounded-2xl p-8 text-center border border-white/20">
-                  <p className="text-slate-500 mb-4">还没有试衣记录</p>
+                <div className="rounded-2xl border border-white/20 bg-white/30 p-8 text-center">
+                  <p className="mb-4 text-slate-500">还没有内容预演记录</p>
                   <Link href="/tryon">
-                    <button className="px-6 py-2 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all">
-                      去体验 AI 试衣
+                    <button className="rounded-lg bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-2 text-white transition-all hover:from-blue-600 hover:to-sky-600">
+                      去开始内容预演
                     </button>
                   </Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {history.map((item) => (
-                    <div key={item.id} className="bg-white/30 rounded-2xl overflow-hidden border border-white/20 shadow-lg hover:shadow-xl transition-all">
-                      <div className="relative aspect-[3/4] bg-gray-100">
-                        <img
-                          src={item.resultImageUrl}
-                          alt="试衣结果"
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-2 right-2">
-                          <button
-                            onClick={() => deleteHistory(item.id)}
-                            className="w-8 h-8 bg-red-500/80 backdrop-blur-sm text-white rounded-full hover:bg-red-600 flex items-center justify-center text-sm transition-all"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                        <div className="absolute bottom-2 left-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
-                            item.tryOnMode === 'overlay'
-                              ? 'bg-green-500/80 text-white'
-                              : 'bg-blue-500/80 text-white'
-                          }`}>
-                            {item.tryOnMode === 'overlay' ? '叠加模式' : '替换模式'}
-                          </span>
-                        </div>
-                      </div>
+                <div className="space-y-5">
+                  {history.map((session) => {
+                    const selectedVariant = getSelectedVariant(session);
 
-                      <div className="p-4">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="text-sm text-slate-600">
-                            {item.clothType === 'upper' ? '👕 上装' : '👖 下装'}
-                          </span>
+                    return (
+                      <article
+                        key={session.id}
+                        className="overflow-hidden rounded-3xl border border-white/20 bg-white/30 shadow-lg"
+                      >
+                        <div className="flex flex-col gap-5 p-5">
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full border border-blue-300/40 bg-blue-50/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-blue-700">
+                                  主色 {session.primaryColor}
+                                </span>
+                                <span className="rounded-full border border-white/30 bg-white/40 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-slate-600">
+                                  主推 {DIRECTION_LABELS[session.selectedDirection]}
+                                </span>
+                              </div>
+                              <p className="mt-3 text-sm text-slate-500">
+                                {new Date(session.createdAt).toLocaleString('zh-CN')}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {selectedVariant ? (
+                                <a
+                                  href={selectedVariant.resultUrl}
+                                  download={`creator-preview-${session.id}.png`}
+                                  className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/70 px-4 py-2 text-sm text-slate-700 transition hover:bg-white"
+                                >
+                                  <Download size={16} />
+                                  下载主推版
+                                </a>
+                              ) : null}
+                              <button
+                                onClick={() => deleteHistory(session.id)}
+                                className="inline-flex items-center gap-2 rounded-full border border-red-200/60 bg-red-50/60 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50"
+                              >
+                                <Trash2 size={16} />
+                                删除
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-3">
+                            {session.variants.map((variant) => (
+                              <div
+                                key={variant.id}
+                                className={`
+                                  overflow-hidden rounded-2xl border
+                                  ${variant.selected
+                                    ? 'border-blue-300/60 bg-white/80 shadow-md'
+                                    : 'border-white/20 bg-white/50'}
+                                `}
+                              >
+                                <div className="relative aspect-[4/5] bg-slate-100">
+                                  <img src={variant.resultUrl} alt={DIRECTION_LABELS[variant.direction]} className="h-full w-full object-cover" />
+                                  <div className="absolute left-3 top-3 flex gap-2">
+                                    <span className="rounded-full bg-black/55 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white">
+                                      {DIRECTION_LABELS[variant.direction]}
+                                    </span>
+                                    {variant.selected ? (
+                                      <span className="rounded-full bg-blue-500/85 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white">
+                                        Lead
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                <div className="space-y-2 p-4">
+                                  <p className="text-sm font-medium text-slate-800">
+                                    {DIRECTION_LABELS[variant.direction]}
+                                  </p>
+                                  <p className="text-xs leading-6 text-slate-500">
+                                    {variant.direction === 'old_money' && '偏稳、偏克制，适合老钱或学院质感内容。'}
+                                    {variant.direction === 'street' && '更强烈、更直接，适合街头和高对比表达。'}
+                                    {variant.direction === 'clean_fit' && '更轻、更 clean，适合简洁封面和轻编辑感。'}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <p className="text-xs text-slate-400">
-                          {new Date(item.createdAt).toLocaleString('zh-CN')}
-                        </p>
-                        <a
-                          href={item.resultImageUrl}
-                          download
-                          className="mt-3 block w-full text-center px-4 py-2 bg-blue-500/80 text-white rounded-xl hover:bg-blue-600 transition-all text-sm font-medium backdrop-blur-sm flex items-center justify-center gap-2"
-                        >
-                          <Download size={16} />
-                          下载图片
-                        </a>
-                      </div>
-                    </div>
-                  ))}
+                      </article>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -534,111 +656,118 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-12 text-center text-slate-500 text-sm relative z-10">
-        <p>Powered by 阿里云 DashScope AI 试衣</p>
-      </footer>
-
-      {/* Add Clothing Modal - Moved outside main to overlay everything */}
-      {showAddClothing && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold">添加新衣服</h3>
+      {showAddClothing ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/30 bg-white/90 p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">添加素材</h2>
+                <p className="mt-1 text-sm text-slate-500">为后续内容预演补充 look 素材</p>
+              </div>
               <button
                 onClick={() => setShowAddClothing(false)}
-                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
               >
-                <X size={20} />
+                <X size={22} />
               </button>
             </div>
 
-            <div className="space-y-4">
-              {/* Image Upload */}
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">衣服照片</label>
-                {newClothing.imageUrl ? (
-                  <div className="relative aspect-square rounded-xl overflow-hidden">
-                    <img src={newClothing.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => setNewClothing(prev => ({ ...prev, imageUrl: '' }))}
-                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-full aspect-square rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer">
-                    <Upload size={32} className="text-slate-400 mb-2" />
-                    <span className="text-sm text-slate-500">点击上传衣服照片</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  </label>
-                )}
-                {uploadingImage && <p className="text-sm text-slate-500 mt-2 text-center">处理中...</p>}
-              </div>
-
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">衣服名称</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">素材名称</label>
                 <input
                   type="text"
                   value={newClothing.name}
-                  onChange={(e) => setNewClothing(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="例如：蓝色T恤"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:outline-none"
+                  onChange={(event) => setNewClothing((previous) => ({ ...previous, name: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-blue-400"
+                  placeholder="例如：黑色双排扣西装外套"
                 />
               </div>
 
-              {/* Cloth Type */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">衣服类型</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setNewClothing(prev => ({ ...prev, clothType: 'upper' }))}
-                    className={`py-3 rounded-xl border transition-all ${
-                      newClothing.clothType === 'upper'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 hover:border-blue-300'
-                    }`}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">素材类别</label>
+                  <select
+                    value={newClothing.category}
+                    onChange={(event) => handleCategoryChange(event.target.value as ClothingCategory)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-blue-400"
                   >
-                    👕 上装
-                  </button>
-                  <button
-                    onClick={() => setNewClothing(prev => ({ ...prev, clothType: 'lower' }))}
-                    className={`py-3 rounded-xl border transition-all ${
-                      newClothing.clothType === 'lower'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 hover:border-blue-300'
-                    }`}
-                  >
-                    👖 下装
-                  </button>
+                    {CATEGORY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">主色标签</label>
+                  <div className="relative">
+                    <Palette size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={newClothing.color}
+                      onChange={(event) => setNewClothing((previous) => ({ ...previous, color: event.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-slate-800 outline-none transition focus:border-blue-400"
+                      placeholder="例如：black / navy / silver"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Color */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">颜色 (可选)</label>
-                <input
-                  type="text"
-                  value={newClothing.color}
-                  onChange={(e) => setNewClothing(prev => ({ ...prev, color: e.target.value }))}
-                  placeholder="例如：蓝色"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:outline-none"
-                />
+                <label className="mb-2 block text-sm font-medium text-slate-700">上传素材图片</label>
+                <label className="flex min-h-[12rem] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/80 px-4 text-center transition hover:border-blue-400 hover:bg-blue-50/40">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  {newClothing.imageUrl ? (
+                    <div className="w-full">
+                      <img
+                        src={newClothing.imageUrl}
+                        alt="素材预览"
+                        className="mx-auto max-h-60 rounded-xl object-contain"
+                      />
+                      <p className="mt-4 text-sm text-slate-500">点击重新上传</p>
+                    </div>
+                  ) : (
+                    <>
+                      {uploadingImage ? (
+                        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500" />
+                      ) : (
+                        <Upload size={32} className="mb-3 text-slate-400" />
+                      )}
+                      <p className="text-base font-medium text-slate-700">
+                        {uploadingImage ? '处理中...' : '点击上传素材图片'}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-500">支持 JPG、PNG、WebP，最大 10MB</p>
+                    </>
+                  )}
+                </label>
               </div>
 
-              <button
-                onClick={handleAddClothing}
-                disabled={!newClothing.name || !newClothing.imageUrl || isSaving}
-                className="w-full py-3 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-xl hover:from-blue-600 hover:to-sky-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? '保存中...' : '保存'}
-              </button>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleAddClothing}
+                  disabled={isSaving || uploadingImage}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-3 text-white transition-all hover:from-blue-600 hover:to-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? '保存中...' : '添加到素材库'}
+                </button>
+                <button
+                  onClick={() => setShowAddClothing(false)}
+                  className="rounded-xl border border-slate-300 px-6 py-3 text-slate-600 transition hover:bg-slate-50"
+                >
+                  取消
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

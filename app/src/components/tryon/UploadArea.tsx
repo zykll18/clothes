@@ -55,8 +55,8 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
         `}
       >
         <div className="pointer-events-none absolute inset-x-8 top-7 flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-[rgba(255,245,225,0.45)] sm:text-[11px]">
-          <span>Digital Casting</span>
-          <span>{previewUrl ? 'Scene Held' : 'Stage Open'}</span>
+          <span>Creator Portrait</span>
+          <span>{previewUrl ? 'Portrait Ready' : 'Upload Open'}</span>
         </div>
 
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,177,106,0.16),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(0,0,0,0.08))]" />
@@ -97,17 +97,17 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
                     <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(212,177,106,0.3)] bg-[rgba(255,255,255,0.05)]">
                       <ImagePlus size={18} />
                     </span>
-                    <span>当前画面已就位，可继续进入下一幕。</span>
+                    <span>当前人物画面已就位，可以继续进入内容预演。</span>
                   </div>
 
                   <p className="max-w-xl text-sm leading-7 text-[rgba(255,245,225,0.62)]">
-                    如需换图，直接替换当前人物素材即可，现有流程与后续步骤保持不变。
+                    如需换图，直接替换当前人物素材即可，后续主色、素材和方向选择逻辑保持不变。
                   </p>
                 </div>
 
                 <span className="inline-flex items-center gap-2 self-start rounded-full border border-[rgba(212,177,106,0.28)] bg-[rgba(255,255,255,0.05)] px-4 py-2 text-xs uppercase tracking-[0.22em] text-[rgba(255,245,225,0.82)] transition group-hover:border-[rgba(212,177,106,0.4)] group-hover:text-white sm:self-auto">
                   <Upload size={14} />
-                  Continue With A New Image
+                  Replace Portrait
                 </span>
               </div>
             </div>
@@ -116,7 +116,7 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
           <div className="relative flex min-h-[26rem] flex-col px-7 pb-8 pt-20 sm:min-h-[30rem] sm:px-8 sm:pb-9">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_14rem] lg:items-start">
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-[rgba(212,177,106,0.72)]">Upload Stage</p>
+                <p className="text-xs uppercase tracking-[0.28em] text-[rgba(212,177,106,0.72)]">Portrait Upload</p>
                 <h3 className="mt-3 text-3xl font-serif italic text-white sm:text-[2.4rem]">{title}</h3>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
                   {subtitle}
@@ -140,15 +140,15 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
 
                 <p className="mt-8 text-sm uppercase tracking-[0.3em] text-[rgba(255,245,225,0.62)]">Opening Portrait</p>
                 <h4 className="mt-4 text-2xl font-serif italic text-white sm:text-[2rem]">
-                  先放入这一幕唯一需要的主角画面。
+                  先放入这次内容预演的人物主画面。
                 </h4>
                 <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                  选择一张清晰人物图开始试穿。上传后会直接进入当前场景，不会打断你后续的步骤节奏。
+                  选择一张清晰人物图开始内容预演。上传后会直接进入当前场景，不会打断你后续的颜色、素材和方向步骤。
                 </p>
 
                 <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-[rgba(212,177,106,0.34)] bg-[rgba(255,255,255,0.06)] px-6 py-3 text-sm font-medium text-[rgba(255,248,237,0.96)] shadow-[0_16px_50px_rgba(0,0,0,0.22)] transition group-hover:border-[rgba(212,177,106,0.48)] group-hover:bg-[rgba(255,255,255,0.1)]">
                   <Upload size={18} />
-                  Select Image To Begin
+                  Select Portrait To Begin
                 </div>
               </div>
             </div>

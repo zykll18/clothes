@@ -14,21 +14,21 @@ export default function HeroSection() {
       <div className="relative mx-auto grid min-h-[80dvh] w-full max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,0.88fr)]">
         <div className="max-w-2xl animate-fade-up-blur">
           <div className="lux-surface lux-outline mb-6 inline-flex rounded-full px-3 py-2 text-xs uppercase tracking-[0.24em] text-white/82">
-            Narrative AI Try-On
+            Creator Preview Tool
           </div>
           <h1 className="font-heading text-6xl italic leading-[0.82] tracking-[-0.04em] text-white sm:text-7xl lg:text-[5.7rem]">
-            Dress the story before you wear the look.
+            Decide the drop before you shoot the look.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-white/74 sm:text-lg">
-            用更接近高级时装 campaign 的方式体验 AI 试衣。上传人物，选择服装，
-            在真正决定之前先看见轮廓、气质与风格的完成态。
+            面向潮流穿搭博主的内容预演工具。上传人物、选主色、混排素材、对比三种方向，
+            先决定这次内容该发哪一版。
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href="/auth/register"
               className="lux-surface-strong lux-outline inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-white/14"
             >
-              开始试穿
+              开始内容预演
               <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
@@ -36,17 +36,21 @@ export default function HeroSection() {
               className="inline-flex items-center gap-2 text-sm text-white/80 transition hover:text-white"
             >
               <Play className="h-4 w-4 fill-current" />
-              查看效果
+              查看定稿台
             </Link>
           </div>
           <div className="mt-10 grid max-w-lg gap-4 sm:grid-cols-2">
             <div className="lux-surface lux-outline rounded-[1.4rem] p-5">
-              <p className="font-heading text-4xl italic leading-none text-white">3 Steps</p>
-              <p className="mt-2 text-sm text-white/64">上传人物、挑选服装、生成试穿画面。</p>
+              <p className="font-heading text-4xl italic leading-none text-white">3 Directions</p>
+              <p className="mt-2 text-sm text-white/64">
+                同一套 look 一次返回三种内容方向，直接并排判断这次主推哪一版。
+              </p>
             </div>
             <div className="lux-surface lux-outline rounded-[1.4rem] p-5">
-              <p className="font-heading text-4xl italic leading-none text-white">Luxury Fit</p>
-              <p className="mt-2 text-sm text-white/64">不是普通换装工具，而是更接近成片质感的预览体验。</p>
+              <p className="font-heading text-4xl italic leading-none text-white">Lead Pick</p>
+              <p className="mt-2 text-sm text-white/64">
+                选定主推版本后再去拍摄、做封面或和品牌沟通，少把试错留到现场。
+              </p>
             </div>
           </div>
         </div>

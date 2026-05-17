@@ -1,0 +1,8 @@
+<svg width="768" height="960" viewBox="0 0 768 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="768" height="960" rx="48" fill="#EDE8DD"/>
+  <rect x="72" y="86" width="624" height="788" rx="36" fill="#F7F3EA"/>
+  <path d="M262 234C295 194 333 176 384 176C435 176 473 194 506 234L562 320L490 370L452 302H316L278 370L206 320L262 234Z" fill="#F4EFE4"/>
+  <path d="M302 302H466L486 792H282L302 302Z" fill="#FFFFFF"/>
+  <path d="M334 238C351 220 366 212 384 212C402 212 417 220 434 238L412 278H356L334 238Z" fill="#E1D8C7"/>
+  <text x="384" y="858" fill="#202020" font-size="44" font-family="Georgia, serif" text-anchor="middle">White Tee</text>
+</svg>

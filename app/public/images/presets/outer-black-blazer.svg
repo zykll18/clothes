@@ -1,0 +1,9 @@
+<svg width="768" height="960" viewBox="0 0 768 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="768" height="960" rx="48" fill="#111111"/>
+  <rect x="72" y="86" width="624" height="788" rx="36" fill="#1F1F1F"/>
+  <path d="M247 210C274 176 314 160 384 160C454 160 494 176 521 210L562 310L481 350L440 280H328L287 350L206 310L247 210Z" fill="#2D2D2D"/>
+  <path d="M270 294H498L534 804H234L270 294Z" fill="#181818"/>
+  <path d="M324 294H444V804H324V294Z" fill="#0D0D0D"/>
+  <path d="M334 214L384 278L434 214H334Z" fill="#C7B18A"/>
+  <text x="384" y="858" fill="#F5F3EB" font-size="44" font-family="Georgia, serif" text-anchor="middle">Black Blazer</text>
+</svg>

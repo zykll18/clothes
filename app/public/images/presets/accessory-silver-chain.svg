@@ -1,0 +1,10 @@
+<svg width="768" height="960" viewBox="0 0 768 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="768" height="960" rx="48" fill="#202225"/>
+  <rect x="72" y="86" width="624" height="788" rx="36" fill="#2B2E33"/>
+  <circle cx="384" cy="438" r="168" fill="#343941"/>
+  <circle cx="384" cy="438" r="108" fill="#23272D"/>
+  <path d="M286 378C312 332 344 310 384 310C424 310 456 332 482 378" stroke="#D7D7DA" stroke-width="18" stroke-linecap="round"/>
+  <path d="M246 456C246 384 308 326 384 326C460 326 522 384 522 456" stroke="#F2F3F6" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="384" cy="524" r="34" fill="#EDEFF2"/>
+  <text x="384" y="858" fill="#F3F4F6" font-size="44" font-family="Georgia, serif" text-anchor="middle">Silver Chain</text>
+</svg>

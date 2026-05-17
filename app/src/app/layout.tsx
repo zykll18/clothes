@@ -27,8 +27,8 @@ const cormorant = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Aura | AI 试衣叙事体验",
-  description: "以高级时装视觉语言重构的 AI 试衣与穿搭预览体验首页。",
+  title: "Aura | 潮流穿搭内容预演工具",
+  description: "面向潮流穿搭博主的内容预演工具：上传人物、选主色、混排素材，并比较三种内容方向。",
 };
 
 export default function RootLayout({

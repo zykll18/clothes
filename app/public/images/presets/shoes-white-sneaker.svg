@@ -1,0 +1,10 @@
+<svg width="768" height="960" viewBox="0 0 768 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="768" height="960" rx="48" fill="#E7E8EC"/>
+  <rect x="72" y="86" width="624" height="788" rx="36" fill="#F5F6F8"/>
+  <path d="M210 612C254 566 308 536 378 524L450 576L560 592C592 596 618 620 626 652L646 730H222C196 730 174 708 174 682V650C174 635 180 620 192 610L210 612Z" fill="#FFFFFF"/>
+  <path d="M474 590C506 602 530 620 552 652" stroke="#D2D6DC" stroke-width="12" stroke-linecap="round"/>
+  <path d="M282 620H482" stroke="#D1D5DC" stroke-width="10" stroke-linecap="round"/>
+  <path d="M258 664H510" stroke="#CAD0D8" stroke-width="10" stroke-linecap="round"/>
+  <path d="M224 730H652" stroke="#99A2AE" stroke-width="20" stroke-linecap="round"/>
+  <text x="384" y="858" fill="#202020" font-size="44" font-family="Georgia, serif" text-anchor="middle">White Sneaker</text>
+</svg>

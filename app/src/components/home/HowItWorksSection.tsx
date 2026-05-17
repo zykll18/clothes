@@ -2,17 +2,17 @@ const steps = [
   {
     index: "01",
     title: "上传人物",
-    body: "从一张干净人物照开始，让轮廓、姿态与比例成为后续试穿的底稿。",
+    body: "用一张清晰正面照锁定人物轮廓，为同一套 look 的所有方向提供共同底稿。",
   },
   {
     index: "02",
-    title: "选择服装",
-    body: "把单件、套装或不同风格方向放进同一叙事框架里比较，而不是孤立地看图。",
+    title: "选主色与搭 look",
+    body: "先定今天想穿的主色，再从个人素材和系统单品里按部位组合这次要预演的 look。",
   },
   {
     index: "03",
-    title: "生成试穿",
-    body: "在真正下决定之前看见材质、风格与人物气质如何合在一起。",
+    title: "比较三版预演",
+    body: "系统返回 3 个内容方向结果，选出本次主推版本后再保存、下载并进入拍摄判断。",
   },
 ];
 
@@ -20,7 +20,7 @@ export default function HowItWorksSection() {
   return (
     <section id="process" className="px-4 py-24 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
-        <p className="text-sm uppercase tracking-[0.22em] text-white/44">How it works</p>
+        <p className="text-sm uppercase tracking-[0.22em] text-white/44">Creator flow</p>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {steps.map((step) => (
             <article

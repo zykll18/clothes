@@ -1,6 +1,6 @@
 import React from 'react';
 
-type AppStep = 1 | 2 | 3 | 4;
+type AppStep = 1 | 2 | 3 | 4 | 5;
 
 interface StepIndicatorProps {
   currentStep: AppStep;
@@ -8,15 +8,16 @@ interface StepIndicatorProps {
 
 const steps = [
   { id: 1, chapter: 'Scene 01', label: '上传人物' },
-  { id: 2, chapter: 'Scene 02', label: '选择单品' },
-  { id: 3, chapter: 'Scene 03', label: '确认比例' },
-  { id: 4, chapter: 'Scene 04', label: '生成成片' },
+  { id: 2, chapter: 'Scene 02', label: '选择主色' },
+  { id: 3, chapter: 'Scene 03', label: '混排素材' },
+  { id: 4, chapter: 'Scene 04', label: '按部位选衣服' },
+  { id: 5, chapter: 'Scene 05', label: '三方向结果' },
 ];
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
   return (
     <div className="w-full">
-      <div className="grid gap-2.5 sm:grid-cols-4 sm:gap-3">
+      <div className="grid gap-2.5 sm:grid-cols-5 sm:gap-3">
         {steps.map((step, index) => {
           const isActive = step.id === currentStep;
           const isCompleted = step.id < currentStep;

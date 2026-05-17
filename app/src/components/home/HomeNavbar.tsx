@@ -34,7 +34,7 @@ export default function HomeNavbar() {
             href="/auth/register"
             className="ml-1 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-white/90"
           >
-            开始试穿
+            开始预演
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </nav>
@@ -58,7 +58,7 @@ export default function HomeNavbar() {
                 href="/auth/register"
                 className="mt-1 rounded-full bg-white px-4 py-3 text-center font-medium text-black transition hover:bg-white/90"
               >
-                开始试穿
+                开始预演
               </Link>
             </div>
           </details>
