@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { CheckCircle2, Download, Loader2, Save, Sparkles } from 'lucide-react';
 import { DIRECTION_LABELS, type CreatorDirection } from '@/lib/creator-preview';
 
@@ -68,10 +69,13 @@ export function PreviewVariantGrid({
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-[rgba(255,255,255,0.03)]">
                 {variant.resultUrl ? (
-                  <img
+                  <Image
                     src={variant.resultUrl}
                     alt={getDirectionLabel(variant.direction)}
-                    className="h-full w-full object-cover"
+                    fill
+                    unoptimized
+                    sizes="(min-width: 1280px) 24rem, 100vw"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-[var(--lux-muted-foreground)]">

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useRef, type ChangeEvent } from 'react';
 import { ImagePlus, Plus, Shirt } from 'lucide-react';
 import { PreviewClothingItem } from '@/types';
@@ -80,11 +81,16 @@ export function PreviewControlRail({
                 <span>Backdrop Ready</span>
                 <span>Live on Stage</span>
               </div>
-              <img
-                src={backgroundImage}
-                alt="背景"
-                className="h-40 w-full object-cover"
-              />
+              <div className="relative h-40 w-full">
+                <Image
+                  src={backgroundImage}
+                  alt="背景"
+                  fill
+                  unoptimized
+                  sizes="20rem"
+                  className="object-cover"
+                />
+              </div>
             </div>
           ) : (
             <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/[0.03] px-4 py-6 text-sm text-muted-lux">
@@ -106,11 +112,16 @@ export function PreviewControlRail({
                 key={item.id}
                 className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-3"
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="h-14 w-14 rounded-[1rem] object-cover"
-                />
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[1rem]">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.name}
+                    fill
+                    unoptimized
+                    sizes="3.5rem"
+                    className="object-cover"
+                  />
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-white">{item.name}</p>
                   <p className="mt-1 text-xs tracking-[0.18em] text-white/45 uppercase">

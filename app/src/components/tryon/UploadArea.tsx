@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { ImagePlus, Loader2, Upload } from 'lucide-react';
 
 interface UploadAreaProps {
@@ -75,12 +76,14 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
                 </div>
               ) : null}
 
-              <img
+              <Image
                 src={previewUrl}
                 alt="Preview"
-                loading="lazy"
+                fill
+                unoptimized
+                sizes="(min-width: 640px) 40rem, 100vw"
                 onLoad={() => setImageLoading(false)}
-                className={`h-full w-full object-contain p-8 transition duration-500 sm:p-10 ${imageLoading ? 'scale-[0.985] opacity-0' : 'scale-100 opacity-100'}`}
+                className={`object-contain p-8 transition duration-500 sm:p-10 ${imageLoading ? 'scale-[0.985] opacity-0' : 'scale-100 opacity-100'}`}
               />
             </div>
 

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import Image from 'next/image';
 import type { SystemPreviewItem } from '@/components/creator-preview/systemItems';
 
 interface WardrobePreviewItem {
@@ -100,10 +101,13 @@ export function RecommendationPoolStep({
                     `}
                   >
                     <div className="relative aspect-[4/5] overflow-hidden">
-                      <img
+                      <Image
                         src={item.imageUrl}
                         alt={item.name}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                        fill
+                        unoptimized
+                        sizes="(min-width: 640px) 18rem, 50vw"
+                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                       <div className="absolute left-3 top-3 flex flex-wrap gap-2">
@@ -159,10 +163,13 @@ export function RecommendationPoolStep({
                   `}
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">
-                    <img
+                    <Image
                       src={item.imageUrl}
                       alt={item.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      fill
+                      unoptimized
+                      sizes="(min-width: 640px) 18rem, 50vw"
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                     <div className="absolute left-3 top-3 flex flex-wrap gap-2">

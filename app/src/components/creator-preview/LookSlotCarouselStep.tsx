@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { LookSlot } from '@/lib/creator-preview';
 
 interface LookSlotCarouselStepProps {
@@ -78,10 +79,13 @@ export function LookSlotCarouselStep({
                   `}
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">
-                    <img
+                    <Image
                       src={item.imageUrl}
                       alt={item.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      fill
+                      unoptimized
+                      sizes="12.5rem"
+                      className="object-cover transition duration-500 group-hover:scale-[1.04]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                   </div>

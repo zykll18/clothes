@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import React from 'react';
 import { AlertCircle, CheckCircle2, Download, RefreshCw, Save, Sparkles } from 'lucide-react';
 
@@ -128,11 +129,17 @@ export const ResultView: React.FC<ResultViewProps> = ({
         <div className="lux-stage-frame lux-noise relative overflow-hidden rounded-[2rem] p-3 sm:p-4">
           <div className="absolute inset-x-[12%] top-0 h-24 rounded-full bg-[rgba(212,177,106,0.12)] blur-[90px]" />
           <div className="relative overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.28)]">
-            <img
-              src={resultImage || ''}
-              alt="Generated Result"
-              className="h-auto w-full rounded-[1.5rem] object-contain"
-            />
+            {resultImage ? (
+              <Image
+                src={resultImage}
+                alt="Generated Result"
+                width={1200}
+                height={1500}
+                unoptimized
+                sizes="(min-width: 1024px) 64rem, 100vw"
+                className="h-auto w-full rounded-[1.5rem] object-contain"
+              />
+            ) : null}
           </div>
         </div>
 

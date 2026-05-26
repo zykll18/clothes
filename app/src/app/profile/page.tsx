@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Download,
@@ -468,7 +469,14 @@ export default function ProfilePage() {
                         {upperLibrary.map((item) => (
                           <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
                             <div className="relative aspect-[3/4]">
-                              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                              <NextImage
+                                src={item.imageUrl}
+                                alt={item.name}
+                                fill
+                                unoptimized
+                                sizes="(min-width: 640px) 12rem, 50vw"
+                                className="object-cover"
+                              />
                               <button
                                 onClick={() => deleteClothing(item.id)}
                                 className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-opacity group-hover:opacity-100"
@@ -493,7 +501,14 @@ export default function ProfilePage() {
                         {lowerLibrary.map((item) => (
                           <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
                             <div className="relative aspect-[3/4]">
-                              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                              <NextImage
+                                src={item.imageUrl}
+                                alt={item.name}
+                                fill
+                                unoptimized
+                                sizes="(min-width: 640px) 12rem, 50vw"
+                                className="object-cover"
+                              />
                               <button
                                 onClick={() => deleteClothing(item.id)}
                                 className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-opacity group-hover:opacity-100"
@@ -518,7 +533,14 @@ export default function ProfilePage() {
                         {fullLibrary.map((item) => (
                           <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
                             <div className="relative aspect-[3/4]">
-                              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                              <NextImage
+                                src={item.imageUrl}
+                                alt={item.name}
+                                fill
+                                unoptimized
+                                sizes="(min-width: 640px) 12rem, 50vw"
+                                className="object-cover"
+                              />
                               <button
                                 onClick={() => deleteClothing(item.id)}
                                 className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-opacity group-hover:opacity-100"
@@ -620,7 +642,14 @@ export default function ProfilePage() {
                                 `}
                               >
                                 <div className="relative aspect-[4/5] bg-slate-100">
-                                  <img src={variant.resultUrl} alt={DIRECTION_LABELS[variant.direction]} className="h-full w-full object-cover" />
+                                  <NextImage
+                                    src={variant.resultUrl}
+                                    alt={DIRECTION_LABELS[variant.direction]}
+                                    fill
+                                    unoptimized
+                                    sizes="(min-width: 768px) 20rem, 100vw"
+                                    className="object-cover"
+                                  />
                                   <div className="absolute left-3 top-3 flex gap-2">
                                     <span className="rounded-full bg-black/55 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white">
                                       {DIRECTION_LABELS[variant.direction]}
@@ -726,10 +755,13 @@ export default function ProfilePage() {
                   />
                   {newClothing.imageUrl ? (
                     <div className="w-full">
-                      <img
+                      <NextImage
                         src={newClothing.imageUrl}
                         alt="素材预览"
-                        className="mx-auto max-h-60 rounded-xl object-contain"
+                        width={480}
+                        height={480}
+                        unoptimized
+                        className="mx-auto max-h-60 h-auto w-auto rounded-xl object-contain"
                       />
                       <p className="mt-4 text-sm text-slate-500">点击重新上传</p>
                     </div>
