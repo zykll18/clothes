@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import sharp from 'sharp';
 import { getClientIdentifier, requireAuth } from '@/lib/api-auth';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -7,14 +9,59 @@ import { checkRateLimit } from '@/lib/rate-limit';
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
 const DASHSCOPE_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
 
+function isBase64DataUrl(value: string): boolean {
+  return /^data:image\/[\w.+-]+;base64,/i.test(value);
+}
+
+function isRemoteUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}
+
+function getImageMimeType(filePath: string): string {
+  const extension = path.extname(filePath).toLowerCase();
+
+  if (extension === '.png') return 'image/png';
+  if (extension === '.webp') return 'image/webp';
+  if (extension === '.gif') return 'image/gif';
+  if (extension === '.svg') return 'image/svg+xml';
+
+  return 'image/jpeg';
+}
+
+async function resolveImageInput(imageInput: string): Promise<string> {
+  if (isBase64DataUrl(imageInput) || isRemoteUrl(imageInput)) {
+    return imageInput;
+  }
+
+  if (!imageInput.startsWith('/')) {
+    return imageInput;
+  }
+
+  const publicRoot = path.join(process.cwd(), 'public');
+  const requestedPath = path.resolve(publicRoot, `.${imageInput}`);
+
+  if (!requestedPath.startsWith(publicRoot)) {
+    throw new Error('本地素材路径无效');
+  }
+
+  const fileBuffer = await readFile(requestedPath);
+  const mimeType = getImageMimeType(requestedPath);
+  return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+}
+
 /**
  * 处理并压缩图片，确保符合阿里云 API 要求
  * 要求：最长边 < 4096px，最短边 > 150px，文件大小 5KB-5MB
  */
-async function processImage(base64Image: string): Promise<string> {
+async function processImage(imageInput: string): Promise<string> {
+  const resolvedImage = await resolveImageInput(imageInput);
+  if (!isBase64DataUrl(resolvedImage)) {
+    return resolvedImage;
+  }
+
   try {
     // 移除 base64 前缀
-    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+    const base64Data = resolvedImage.replace(/^data:image\/[\w.+-]+;base64,/i, '');
     const buffer = Buffer.from(base64Data, 'base64');
 
     // 检查文件大小
@@ -93,9 +140,8 @@ async function processImage(base64Image: string): Promise<string> {
     // 返回 base64 格式的图片
     return `data:image/jpeg;base64,${outputBuffer.toString('base64')}`;
   } catch (error) {
-    console.error('图片处理失败，使用原图:', error);
-    // 如果处理失败，返回原图
-    return base64Image;
+    console.error('图片处理失败，使用解析后的原图:', error);
+    return resolvedImage;
   }
 }
 
