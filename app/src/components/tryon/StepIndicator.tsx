@@ -7,11 +7,11 @@ interface StepIndicatorProps {
 }
 
 const steps = [
-  { id: 1, chapter: 'Scene 01', label: '上传人物' },
-  { id: 2, chapter: 'Scene 02', label: '选择主色' },
-  { id: 3, chapter: 'Scene 03', label: '混排素材' },
-  { id: 4, chapter: 'Scene 04', label: '按部位选衣服' },
-  { id: 5, chapter: 'Scene 05', label: '三方向结果' },
+  { id: 1, chapter: 'Scene 01', label: '本人入镜' },
+  { id: 2, chapter: 'Scene 02', label: '今日配色' },
+  { id: 3, chapter: 'Scene 03', label: '今日风格' },
+  { id: 4, chapter: 'Scene 04', label: '游戏式选衣' },
+  { id: 5, chapter: 'Scene 05', label: '生成预览' },
 ];
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {

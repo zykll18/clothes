@@ -375,20 +375,24 @@ export default function SharedFlowerBackground({
         <video
           ref={videoARef}
           autoPlay
+          crossOrigin="anonymous"
           muted
           playsInline
           preload="auto"
           poster={FLOWER_VIDEO_POSTER}
+          data-flower-background-video="true"
           className={VIDEO_CLASS_NAME}
           aria-hidden="true"
         />
         <video
           ref={videoBRef}
           autoPlay
+          crossOrigin="anonymous"
           muted
           playsInline
           preload="auto"
           poster={FLOWER_VIDEO_POSTER}
+          data-flower-background-video="true"
           className={VIDEO_CLASS_NAME}
           aria-hidden="true"
         />

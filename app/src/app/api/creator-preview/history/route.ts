@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const rawBody: unknown = await request.json();
     if (!isCreatorPreviewSavePayload(rawBody)) {
       return NextResponse.json(
-        { error: '内容预演保存请求无效' },
+        { error: '搭配预览保存请求无效' },
         { status: 400 }
       );
     }
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         personImageUrl: rawBody.personImageUrl,
         sourceImageUrl: rawBody.sourceImageUrl,
         primaryColor: rawBody.primaryColor,
+        outfitColorPlan: rawBody.outfitColorPlan,
         directionTags: rawBody.directionTags,
         selectedOuterwearId: rawBody.slotSelections.outerwear ?? null,
         selectedInnerwearId: rawBody.slotSelections.innerwear ?? null,
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
       session,
     });
   } catch (error) {
-    console.error('保存内容预演历史失败:', error);
+    console.error('保存搭配预览历史失败:', error);
     return NextResponse.json(
       { error: '服务器错误，请稍后重试' },
       { status: 500 }
@@ -103,7 +104,7 @@ export async function GET(request: NextRequest) {
       total,
     });
   } catch (error) {
-    console.error('获取内容预演历史失败:', error);
+    console.error('获取搭配预览历史失败:', error);
     return NextResponse.json(
       { error: '服务器错误，请稍后重试' },
       { status: 500 }

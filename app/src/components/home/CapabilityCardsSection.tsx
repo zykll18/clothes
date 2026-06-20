@@ -1,23 +1,23 @@
-import { Layers3, ScanFace, Sparkles } from "lucide-react";
+import { Palette, ScanFace, Shirt } from "lucide-react";
 
 const cards = [
   {
-    title: "人物底稿",
-    body: "用同一张人物照锁定轮廓、姿态与比例，让每个方向都建立在同一个人设和气质锚点上。",
+    title: "本人入镜",
+    body: "先上传本人照片，让后续每次搭配都围绕同一个身形、姿态和镜头气质生成预览。",
     icon: ScanFace,
-    tags: ["Identity", "Silhouette", "Consistency"],
+    tags: ["Portrait", "Fit Base", "Preview"],
   },
   {
-    title: "三向对比",
-    body: "同一套 look 一次返回 3 个内容方向，把街头、老钱、clean fit 这类不同气质放在一屏里判断。",
-    icon: Layers3,
-    tags: ["3 Variants", "Compare", "Direction"],
+    title: "衣橱筛选",
+    body: "按今日配色和风格，从自己的橱窗里优先推送更匹配的外套、内搭、下装、鞋子和配饰。",
+    icon: Palette,
+    tags: ["Color", "Style", "Wardrobe"],
   },
   {
-    title: "主推定版",
-    body: "生成后手动选定这次主推版本，把结果留下来给拍摄、封面、选题和品牌沟通继续使用。",
-    icon: Sparkles,
-    tags: ["Hero Pick", "Save", "Download"],
+    title: "游戏式选衣",
+    body: "像换装游戏一样按部位挑选单品，搭出完整 look 后生成一张可保存、可下载的上身预览。",
+    icon: Shirt,
+    tags: ["Outfit", "Slots", "Generate"],
   },
 ];
 
@@ -33,31 +33,39 @@ export default function CapabilityCardsSection() {
             return (
               <article
                 key={card.title}
-                className="lux-surface lux-outline flex min-h-[320px] flex-col rounded-[1.8rem] p-7"
+                className="group/card lux-hover-shell relative rounded-[1.8rem] outline-none"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="lux-surface rounded-[1rem] p-3">
-                    <Icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex max-w-[70%] flex-wrap justify-end gap-2">
-                    {card.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="lux-surface rounded-full px-3 py-1 text-[11px] text-white/76"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <div className="lux-refraction-aura" />
+                <div className="lux-surface lux-outline relative flex min-h-[240px] flex-col overflow-hidden rounded-[1.8rem] p-6 transition duration-500 group-hover/card:-translate-y-0.5 group-hover/card:bg-white/[0.055] sm:min-h-[260px] sm:p-7">
+                  <div className="lux-refractive-edge" />
 
-                <div className="mt-auto pt-16">
-                  <h3 className="font-heading text-4xl italic leading-none text-white">
-                    {card.title}
-                  </h3>
-                  <p className="mt-4 max-w-[30ch] text-sm leading-7 text-white/66">
-                    {card.body}
-                  </p>
+                  <div className="relative flex items-start justify-between gap-4">
+                    <div className="lux-surface rounded-[1rem] p-3">
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex max-w-[70%] flex-wrap justify-end gap-2">
+                      {card.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="lux-surface rounded-full px-3 py-1 text-[11px] text-white/76"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="relative mt-auto pt-8 sm:pt-10">
+                    <h3
+                      className="lux-refraction-title font-heading text-4xl italic leading-none text-white"
+                      data-refract={card.title}
+                    >
+                      {card.title}
+                    </h3>
+                    <p className="max-h-0 translate-y-2 overflow-hidden text-sm leading-7 text-white/68 opacity-0 transition-all duration-500 group-hover/card:mt-3 group-hover/card:max-h-24 group-hover/card:translate-y-0 group-hover/card:opacity-100">
+                      {card.body}
+                    </p>
+                  </div>
                 </div>
               </article>
             );

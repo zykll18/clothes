@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { getClientIdentifier, requireAuth } from '@/lib/api-auth';
@@ -15,6 +16,15 @@ function isBase64DataUrl(value: string): boolean {
 
 function isRemoteUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
+}
+
+function dataUrlToBuffer(value: string): Buffer {
+  const match = value.match(/^data:image\/[\w.+-]+;base64,(.+)$/i);
+  if (!match?.[1]) {
+    throw new Error('图片数据无效');
+  }
+
+  return Buffer.from(match[1], 'base64');
 }
 
 function getImageMimeType(filePath: string): string {
@@ -47,6 +57,100 @@ async function resolveImageInput(imageInput: string): Promise<string> {
   const fileBuffer = await readFile(requestedPath);
   const mimeType = getImageMimeType(requestedPath);
   return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+}
+
+async function resolveImageBuffer(imageInput: string): Promise<Buffer> {
+  const resolved = await resolveImageInput(imageInput);
+  if (isBase64DataUrl(resolved)) {
+    return dataUrlToBuffer(resolved);
+  }
+
+  if (isRemoteUrl(resolved)) {
+    const response = await fetch(resolved, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('远程图片读取失败');
+    }
+    return Buffer.from(await response.arrayBuffer());
+  }
+
+  throw new Error('图片格式不受支持');
+}
+
+async function createLocalDemoPreview(
+  personImage: string,
+  clothImage: string,
+  keepClothImage?: string
+): Promise<string> {
+  const width = 900;
+  const height = 1125;
+  const personBuffer = await resolveImageBuffer(personImage);
+  const selectedBuffers = await Promise.all(
+    [clothImage, keepClothImage].filter((value): value is string => Boolean(value)).map(resolveImageBuffer)
+  );
+
+  const cardWidth = selectedBuffers.length > 1 ? 220 : 260;
+  const cardHeight = selectedBuffers.length > 1 ? 276 : 326;
+  const gap = 22;
+  const cardTop = height - cardHeight - 58;
+  const cardsWidth = selectedBuffers.length * cardWidth + Math.max(selectedBuffers.length - 1, 0) * gap;
+  const cardLeft = width - cardsWidth - 48;
+
+  const overlays = await Promise.all(
+    selectedBuffers.map(async (buffer, index) => {
+      const card = await sharp({
+        create: {
+          width: cardWidth,
+          height: cardHeight,
+          channels: 4,
+          background: { r: 12, g: 12, b: 14, alpha: 0.9 },
+        },
+      })
+        .composite([
+          {
+            input: await sharp(buffer)
+              .resize(cardWidth - 18, cardHeight - 18, { fit: 'contain' })
+              .png()
+              .toBuffer(),
+            left: 9,
+            top: 9,
+          },
+        ])
+        .png()
+        .toBuffer();
+
+      return {
+        input: card,
+        left: cardLeft + index * (cardWidth + gap),
+        top: cardTop,
+      };
+    })
+  );
+
+  const label = Buffer.from(`
+    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="${height - 410}" width="${width}" height="410" fill="url(#fade)"/>
+      <text x="48" y="${height - 92}" fill="#f5f2ed" font-size="24" font-family="Arial, sans-serif" letter-spacing="5">LOCAL DEMO PREVIEW</text>
+      <defs>
+        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#050505" stop-opacity="0"/>
+          <stop offset="1" stop-color="#050505" stop-opacity="0.88"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  `);
+
+  const output = await sharp(personBuffer)
+    .resize(width, height, { fit: 'cover', position: 'top' })
+    .composite([{ input: label, left: 0, top: 0 }, ...overlays])
+    .jpeg({ quality: 88, progressive: true })
+    .toBuffer();
+
+  const generatedDirectory = path.join(process.cwd(), 'public', 'generated');
+  const fileName = `demo-${randomUUID()}.jpg`;
+  await mkdir(generatedDirectory, { recursive: true });
+  await writeFile(path.join(generatedDirectory, fileName), output);
+
+  return `/generated/${fileName}`;
 }
 
 /**
@@ -257,13 +361,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!DASHSCOPE_API_KEY) {
-      return NextResponse.json(
-        { error: '未配置阿里云 API Key，请在 .env 文件中设置 DASHSCOPE_API_KEY' },
-        { status: 500 }
-      );
-    }
-
     const rawBody: unknown = await request.json();
     const body = parseTryOnRequest(rawBody);
     if (!body) {
@@ -280,6 +377,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: '请上传用户照片和衣服照片' },
         { status: 400 }
+      );
+    }
+
+    if (!DASHSCOPE_API_KEY && process.env.NODE_ENV !== 'production') {
+      const resultUrl = await createLocalDemoPreview(personImage, clothImage, keepClothImage);
+      return NextResponse.json({
+        success: true,
+        status: 'completed',
+        resultUrl,
+        demoMode: true,
+        message: '未配置 DashScope，已生成本地演示搭配板',
+      });
+    }
+
+    if (!DASHSCOPE_API_KEY) {
+      return NextResponse.json(
+        { error: '未配置阿里云 API Key，请在服务端设置 DASHSCOPE_API_KEY' },
+        { status: 503 }
       );
     }
 
@@ -333,9 +448,21 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorData = await response.json().catch((): DashScopeErrorResponse => ({})) as DashScopeErrorResponse;
       console.error('阿里云 API 错误:', errorData);
+
+      if (process.env.NODE_ENV !== 'production') {
+        const resultUrl = await createLocalDemoPreview(personImage, clothImage, keepClothImage);
+        return NextResponse.json({
+          success: true,
+          status: 'completed',
+          resultUrl,
+          demoMode: true,
+          message: 'DashScope 当前不可用，已生成本地演示搭配板',
+        });
+      }
+
       return NextResponse.json(
-        { error: `AI 试衣服务调用失败: ${errorData.message || response.statusText}` },
-        { status: response.status }
+        { error: `AI 试衣服务暂时不可用: ${errorData.message || response.statusText}` },
+        { status: 503 }
       );
     }
 

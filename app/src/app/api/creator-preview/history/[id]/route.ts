@@ -23,7 +23,7 @@ export async function DELETE(
 
     if (!session) {
       return NextResponse.json(
-        { error: '内容预演不存在' },
+        { error: '搭配预览不存在' },
         { status: 404 }
       );
     }
@@ -34,7 +34,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('删除内容预演历史失败:', error);
+    console.error('删除搭配预览历史失败:', error);
     return NextResponse.json(
       { error: '服务器错误，请稍后重试' },
       { status: 500 }

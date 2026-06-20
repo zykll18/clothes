@@ -122,6 +122,7 @@ model CreatorPreviewSession {
   personImageUrl      String
   sourceImageUrl      String
   primaryColor        String
+  outfitColorPlan     Json?
   directionTags       Json
   selectedOuterwearId String?
   selectedInnerwearId String?

@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { DIRECTION_LABELS, type CreatorDirection } from '@/lib/creator-preview';
+import SharedFlowerBackground from '@/components/shared/SharedFlowerBackground';
 
 type BodyType = 'SLIM' | 'REGULAR' | 'ATHLETIC' | 'PLUS_SIZE';
 type ClothingCategory = 'TOP' | 'BOTTOM' | 'DRESS' | 'OUTERWEAR' | 'SHOES' | 'ACCESSORY';
@@ -46,6 +47,7 @@ interface CreatorPreviewSession {
   personImageUrl: string;
   sourceImageUrl: string;
   primaryColor: string;
+  outfitColorPlan?: Record<string, string> | null;
   directionTags: CreatorDirection[];
   selectedDirection: CreatorDirection;
   createdAt: string;
@@ -60,6 +62,7 @@ interface ClothingItem {
   imageUrl: string;
   color?: string;
   brand?: string;
+  tags: string;
   createdAt: string;
 }
 
@@ -115,6 +118,7 @@ export default function ProfilePage() {
     clothType: 'upper' as ClothingType,
     imageUrl: '',
     color: '',
+    tags: '',
   });
 
   useEffect(() => {
@@ -143,7 +147,7 @@ export default function ProfilePage() {
           setHistory(data.sessions || []);
         }
       } catch (error) {
-        console.error('获取内容预演历史失败:', error);
+        console.error('获取搭配预览历史失败:', error);
       } finally {
         setHistoryLoading(false);
       }
@@ -271,6 +275,7 @@ export default function ProfilePage() {
           clothType: newClothing.clothType,
           imageUrl: newClothing.imageUrl,
           color: newClothing.color,
+          tags: newClothing.tags,
         }),
       });
 
@@ -284,6 +289,7 @@ export default function ProfilePage() {
           clothType: 'upper',
           imageUrl: '',
           color: '',
+          tags: '',
         });
       } else {
         alert(data.error || '添加素材失败，请稍后重试');
@@ -316,7 +322,7 @@ export default function ProfilePage() {
   };
 
   const deleteHistory = async (id: string) => {
-    if (!confirm('确定要删除这条内容预演记录吗？')) return;
+    if (!confirm('确定要删除这条搭配预览记录吗？')) return;
 
     try {
       const response = await fetch(`/api/creator-preview/history/${id}`, {
@@ -329,17 +335,19 @@ export default function ProfilePage() {
         alert('删除失败，请稍后重试');
       }
     } catch (error) {
-      console.error('删除内容预演历史失败:', error);
+      console.error('删除搭配预览历史失败:', error);
       alert('删除失败，请稍后重试');
     }
   };
 
   if (loading) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
-          <p className="mt-4 text-slate-600">加载中...</p>
+      <div className="lux-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+        <SharedFlowerBackground mode="atelier" dimmed />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,4,6,0.68),rgba(4,4,6,0.9))]" />
+        <div className="relative z-10 text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border border-[rgba(212,177,106,0.28)] border-t-[rgba(212,177,106,0.95)]" />
+          <p className="mt-4 text-[var(--lux-muted-foreground)]">加载中...</p>
         </div>
       </div>
     );
@@ -347,11 +355,13 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
-        <div className="rounded-2xl border border-white/30 bg-white/20 p-8 text-center shadow-xl backdrop-blur-sm">
-          <p className="mb-4 text-slate-600">请先登录</p>
+      <div className="lux-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+        <SharedFlowerBackground mode="atelier" dimmed />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,4,6,0.68),rgba(4,4,6,0.9))]" />
+        <div className="lux-stage-frame relative z-10 rounded-[2rem] p-8 text-center">
+          <p className="mb-4 text-[var(--lux-muted-foreground)]">请先登录</p>
           <Link href="/auth/login">
-            <button className="rounded-lg bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-2 text-white transition-all hover:from-blue-600 hover:to-sky-600">
+            <button className="rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-6 py-3 text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.24)]">
               去登录
             </button>
           </Link>
@@ -365,43 +375,39 @@ export default function ProfilePage() {
   const fullLibrary = clothingItems.filter((item) => item.clothType === 'full');
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
-      <div className="pointer-events-none fixed left-0 top-0 -z-10 h-full w-full">
-        <div className="absolute left-[-10%] top-[-10%] h-[600px] w-[600px] rounded-full bg-blue-300 opacity-60 blur-[100px]" />
-        <div className="absolute right-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-sky-200 opacity-60 blur-[100px]" />
-        <div className="absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-cyan-200 opacity-60 blur-[100px]" />
-        <div className="absolute bottom-[10%] right-[10%] h-[400px] w-[400px] rounded-full bg-indigo-200 opacity-50 blur-[100px]" />
-      </div>
+    <div className="lux-page relative min-h-screen overflow-hidden px-4 py-10">
+      <SharedFlowerBackground mode="atelier" dimmed />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,4,6,0.6),rgba(4,4,6,0.86)_34%,rgba(4,4,6,0.96))]" />
 
-      <header className="relative z-10 mb-10 text-center">
-        <h1 className="mb-3 text-4xl font-serif tracking-wide text-slate-900 drop-shadow-sm">创作者工作台</h1>
-        <p className="text-lg text-slate-600">管理你的素材库与内容预演记录</p>
+      <header className="relative z-10 mx-auto mb-10 max-w-6xl text-center">
+        <h1 className="mb-3 font-heading text-5xl italic tracking-[-0.03em] text-white">创作者工作台</h1>
+        <p className="text-lg text-[var(--lux-muted-foreground)]">管理你的衣橱与搭配预览记录</p>
       </header>
 
-      <main className="relative w-full max-w-6xl">
+      <main className="relative z-10 mx-auto w-full max-w-6xl">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-1">
-            <div className="rounded-3xl border border-white/30 bg-white/20 p-6 shadow-xl backdrop-blur-sm">
+            <div className="lux-rail rounded-[2rem] p-6">
               <div className="text-center">
-                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white/50 bg-blue-100">
-                  <User size={40} className="text-blue-500" />
+                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border border-white/12 bg-white/[0.05]">
+                  <User size={40} className="text-[rgba(255,245,225,0.84)]" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-800">{user.name}</h2>
-                <p className="text-slate-500">{user.email}</p>
+                <h2 className="text-xl font-semibold text-white">{user.name}</h2>
+                <p className="text-[var(--lux-muted-foreground)]">{user.email}</p>
               </div>
 
-              <div className="mt-6 space-y-3 rounded-2xl bg-white/30 p-4">
+              <div className="mt-6 space-y-3 rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-4">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">身高:</span>
-                  <span className="font-medium text-slate-800">{user.height ? `${user.height} cm` : '未设置'}</span>
+                  <span className="text-[var(--lux-muted-foreground)]">身高:</span>
+                  <span className="font-medium text-white">{user.height ? `${user.height} cm` : '未设置'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">体重:</span>
-                  <span className="font-medium text-slate-800">{user.weight ? `${user.weight} kg` : '未设置'}</span>
+                  <span className="text-[var(--lux-muted-foreground)]">体重:</span>
+                  <span className="font-medium text-white">{user.weight ? `${user.weight} kg` : '未设置'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">体型:</span>
-                  <span className="font-medium text-slate-800">{getBodyTypeLabel(user.bodyType)}</span>
+                  <span className="text-[var(--lux-muted-foreground)]">体型:</span>
+                  <span className="font-medium text-white">{getBodyTypeLabel(user.bodyType)}</span>
                 </div>
               </div>
 
@@ -415,14 +421,14 @@ export default function ProfilePage() {
             </div>
 
             <Link href="/tryon">
-              <div className="group cursor-pointer rounded-2xl border border-white/30 bg-white/20 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl backdrop-blur-sm">
+              <div className="lux-stage-frame group cursor-pointer rounded-[1.8rem] p-6 transition-all hover:scale-[1.01]">
                 <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 shadow-lg shadow-blue-200">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(212,177,106,0.18)]">
                     <Sparkles size={24} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-800">开始内容预演</h3>
-                    <p className="text-sm text-slate-500">上传人物、选主色、比较三种方向</p>
+                    <h3 className="text-lg font-semibold text-white">开始搭配预览</h3>
+                    <p className="text-sm text-[var(--lux-muted-foreground)]">上传本人、规划配色和风格，再从衣橱选一套</p>
                   </div>
                 </div>
               </div>
@@ -430,32 +436,32 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-6 lg:col-span-2">
-            <div className="rounded-3xl border border-white/30 bg-white/20 p-6 shadow-xl backdrop-blur-sm">
+            <div className="lux-rail rounded-[2rem] p-6">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-xl font-bold text-slate-800">
-                  <Shirt size={24} className="text-blue-500" />
-                  我的素材库
-                  <span className="text-sm font-normal text-slate-500">({clothingItems.length}件)</span>
+                <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+                  <Shirt size={24} className="text-[rgba(212,177,106,0.9)]" />
+                  我的衣橱
+                  <span className="text-sm font-normal text-[var(--lux-muted-foreground)]">({clothingItems.length}件)</span>
                 </h2>
                 <button
                   onClick={() => setShowAddClothing(true)}
-                  className="flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm text-white transition-all hover:bg-blue-600"
+                  className="flex items-center gap-2 rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-4 py-2 text-sm text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.24)]"
                 >
                   <Plus size={18} />
-                  添加素材
+                  添加衣服
                 </button>
               </div>
 
               {clothingLoading ? (
                 <div className="py-8 text-center">
-                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border border-[rgba(212,177,106,0.3)] border-t-[rgba(212,177,106,0.95)]" />
                 </div>
               ) : clothingItems.length === 0 ? (
-                <div className="rounded-2xl border border-white/20 bg-white/30 p-8 text-center">
-                  <p className="mb-4 text-slate-500">还没有添加素材</p>
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-8 text-center">
+                  <p className="mb-4 text-[var(--lux-muted-foreground)]">衣橱里还没有衣服</p>
                   <button
                     onClick={() => setShowAddClothing(true)}
-                    className="rounded-lg bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-2 text-white transition-all hover:from-blue-600 hover:to-sky-600"
+                    className="rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-6 py-3 text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.24)]"
                   >
                     添加第一件
                   </button>
@@ -464,7 +470,7 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                   {upperLibrary.length > 0 ? (
                     <section>
-                      <h3 className="mb-3 text-sm font-medium text-slate-500">上装 / 外套 ({upperLibrary.length})</h3>
+                      <h3 className="mb-3 text-sm font-medium text-[var(--lux-muted-foreground)]">上装 / 外套 ({upperLibrary.length})</h3>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {upperLibrary.map((item) => (
                           <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
@@ -496,7 +502,7 @@ export default function ProfilePage() {
 
                   {lowerLibrary.length > 0 ? (
                     <section>
-                      <h3 className="mb-3 text-sm font-medium text-slate-500">下装 / 鞋子 ({lowerLibrary.length})</h3>
+                      <h3 className="mb-3 text-sm font-medium text-[var(--lux-muted-foreground)]">下装 / 鞋子 ({lowerLibrary.length})</h3>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {lowerLibrary.map((item) => (
                           <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
@@ -528,7 +534,7 @@ export default function ProfilePage() {
 
                   {fullLibrary.length > 0 ? (
                     <section>
-                      <h3 className="mb-3 text-sm font-medium text-slate-500">配饰 / 全身类 ({fullLibrary.length})</h3>
+                      <h3 className="mb-3 text-sm font-medium text-[var(--lux-muted-foreground)]">配饰 / 全身类 ({fullLibrary.length})</h3>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {fullLibrary.map((item) => (
                           <div key={item.id} className="group overflow-hidden rounded-xl border border-white/20 bg-white/30">
@@ -561,25 +567,25 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="rounded-3xl border border-white/30 bg-white/20 p-6 shadow-xl backdrop-blur-sm">
-              <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm text-white">
+            <div className="lux-rail rounded-[2rem] p-6">
+              <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(212,177,106,0.18)] text-sm text-white">
                   {history.length}
                 </span>
-                内容预演历史
+                搭配预览历史
               </h2>
 
               {historyLoading ? (
                 <div className="py-8 text-center">
-                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
-                  <p className="mt-2 text-sm text-slate-500">加载中...</p>
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border border-[rgba(212,177,106,0.3)] border-t-[rgba(212,177,106,0.95)]" />
+                  <p className="mt-2 text-sm text-[var(--lux-muted-foreground)]">加载中...</p>
                 </div>
               ) : history.length === 0 ? (
-                <div className="rounded-2xl border border-white/20 bg-white/30 p-8 text-center">
-                  <p className="mb-4 text-slate-500">还没有内容预演记录</p>
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-8 text-center">
+                  <p className="mb-4 text-[var(--lux-muted-foreground)]">还没有搭配预览记录</p>
                   <Link href="/tryon">
-                    <button className="rounded-lg bg-gradient-to-r from-blue-500 to-sky-500 px-6 py-2 text-white transition-all hover:from-blue-600 hover:to-sky-600">
-                      去开始内容预演
+                    <button className="rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.16)] px-6 py-3 text-[rgba(255,248,237,0.96)] transition hover:bg-[rgba(212,177,106,0.24)]">
+                      去开始搭配
                     </button>
                   </Link>
                 </div>
@@ -601,7 +607,7 @@ export default function ProfilePage() {
                                   主色 {session.primaryColor}
                                 </span>
                                 <span className="rounded-full border border-white/30 bg-white/40 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-slate-600">
-                                  主推 {DIRECTION_LABELS[session.selectedDirection]}
+                                  风格 {DIRECTION_LABELS[session.selectedDirection]}
                                 </span>
                               </div>
                               <p className="mt-3 text-sm text-slate-500">
@@ -612,12 +618,11 @@ export default function ProfilePage() {
                             <div className="flex flex-wrap gap-2">
                               {selectedVariant ? (
                                 <a
-                                  href={selectedVariant.resultUrl}
-                                  download={`creator-preview-${session.id}.png`}
+                                  href={`/api/download?url=${encodeURIComponent(selectedVariant.resultUrl)}&filename=outfit-preview-${session.id}.png`}
                                   className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/70 px-4 py-2 text-sm text-slate-700 transition hover:bg-white"
                                 >
                                   <Download size={16} />
-                                  下载主推版
+                                  下载预览
                                 </a>
                               ) : null}
                               <button
@@ -630,7 +635,7 @@ export default function ProfilePage() {
                             </div>
                           </div>
 
-                          <div className="grid gap-4 md:grid-cols-3">
+                          <div className="grid gap-4">
                             {session.variants.map((variant) => (
                               <div
                                 key={variant.id}
@@ -656,7 +661,7 @@ export default function ProfilePage() {
                                     </span>
                                     {variant.selected ? (
                                       <span className="rounded-full bg-blue-500/85 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white">
-                                        Lead
+                                      Saved
                                       </span>
                                     ) : null}
                                   </div>
@@ -690,8 +695,8 @@ export default function ProfilePage() {
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/30 bg-white/90 p-6 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">添加素材</h2>
-                <p className="mt-1 text-sm text-slate-500">为后续内容预演补充 look 素材</p>
+                <h2 className="text-2xl font-bold text-slate-800">添加衣服</h2>
+                <p className="mt-1 text-sm text-slate-500">补充类别、颜色和风格标签，后续推荐会优先匹配</p>
               </div>
               <button
                 onClick={() => setShowAddClothing(false)}
@@ -703,7 +708,7 @@ export default function ProfilePage() {
 
             <div className="space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">素材名称</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">衣服名称</label>
                 <input
                   type="text"
                   value={newClothing.name}
@@ -742,6 +747,18 @@ export default function ProfilePage() {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">风格标签</label>
+                <input
+                  type="text"
+                  value={newClothing.tags}
+                  onChange={(event) => setNewClothing((previous) => ({ ...previous, tags: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-blue-400"
+                  placeholder="例如：street, oversize, clean fit"
+                />
+                <p className="mt-2 text-xs text-slate-500">可用逗号分隔多个标签，系统会按今天的风格排序。</p>
               </div>
 
               <div>

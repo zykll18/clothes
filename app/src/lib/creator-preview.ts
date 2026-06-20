@@ -4,8 +4,28 @@ export type CreatorDirection = typeof CREATOR_DIRECTIONS[number];
 export const LOOK_SLOTS = ['outerwear', 'innerwear', 'pants', 'accessory', 'shoes'] as const;
 export type LookSlot = typeof LOOK_SLOTS[number];
 
-export const PRIMARY_COLORS = ['black', 'white', 'grey', 'navy', 'brown', 'green', 'red'] as const;
+export const PRIMARY_COLORS = [
+  'black',
+  'white',
+  'grey',
+  'navy',
+  'brown',
+  'green',
+  'red',
+  'beige',
+  'cream',
+  'denim',
+  'pink',
+  'yellow',
+  'orange',
+  'purple',
+  'silver',
+] as const;
 export type PrimaryColor = typeof PRIMARY_COLORS[number];
+
+export const OUTFIT_COLOR_SLOTS = ['innerwear', 'top', 'pants', 'shoes', 'socks', 'hat'] as const;
+export type OutfitColorSlot = typeof OUTFIT_COLOR_SLOTS[number];
+export type OutfitColorPlan = Partial<Record<OutfitColorSlot, PrimaryColor>>;
 
 export const DIRECTION_LABELS: Record<CreatorDirection, string> = {
   old_money: 'Old Money',
@@ -30,6 +50,7 @@ export interface CreatorPreviewSavePayload {
   personImageUrl: string;
   sourceImageUrl: string;
   primaryColor: PrimaryColor;
+  outfitColorPlan?: OutfitColorPlan;
   directionTags: CreatorDirection[];
   selectedDirection: CreatorDirection;
   slotSelections: Partial<Record<LookSlot, string>>;
@@ -90,6 +111,17 @@ function isSlotSelections(value: unknown): value is Partial<Record<LookSlot, str
   ));
 }
 
+function isOutfitColorPlan(value: unknown): value is OutfitColorPlan {
+  if (!isRecord(value) || !hasOnlyAllowedKeys(value, OUTFIT_COLOR_SLOTS)) {
+    return false;
+  }
+
+  return Object.entries(value).every(([slot, color]) => (
+    OUTFIT_COLOR_SLOTS.includes(slot as OutfitColorSlot) &&
+    isPrimaryColor(color)
+  ));
+}
+
 export function isCreatorPreviewSavePayload(value: unknown): value is CreatorPreviewSavePayload {
   if (!isRecord(value)) {
     return false;
@@ -102,14 +134,17 @@ export function isCreatorPreviewSavePayload(value: unknown): value is CreatorPre
     !isNonEmptyString(value.personImageUrl) ||
     !isNonEmptyString(value.sourceImageUrl) ||
     !isPrimaryColor(value.primaryColor) ||
+    (value.outfitColorPlan !== undefined && !isOutfitColorPlan(value.outfitColorPlan)) ||
     !Array.isArray(directionTags) ||
-    directionTags.length !== CREATOR_DIRECTIONS.length ||
+    directionTags.length < 1 ||
+    directionTags.length > CREATOR_DIRECTIONS.length ||
     !directionTags.every(isCreatorDirection) ||
     !hasUniqueValues(directionTags) ||
     !isCreatorDirection(value.selectedDirection) ||
     !isSlotSelections(value.slotSelections) ||
     !Array.isArray(variants) ||
-    variants.length !== CREATOR_DIRECTIONS.length ||
+    variants.length < 1 ||
+    variants.length > CREATOR_DIRECTIONS.length ||
     !variants.every(isCreatorPreviewVariantInput)
   ) {
     return false;

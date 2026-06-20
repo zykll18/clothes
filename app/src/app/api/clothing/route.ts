@@ -13,6 +13,7 @@ interface CreateClothingRequest {
   imageUrl: string;
   color?: string;
   brand?: string;
+  tags?: string;
 }
 
 const CLOTHING_REQUEST_CATEGORIES: readonly ClothingRequestCategory[] = [
@@ -47,7 +48,7 @@ function parseCreateClothingRequest(rawBody: unknown): CreateClothingRequest | n
     return null;
   }
 
-  const { name, category, clothType, imageUrl, color, brand } = rawBody;
+  const { name, category, clothType, imageUrl, color, brand, tags } = rawBody;
   if (typeof name !== 'string' || typeof imageUrl !== 'string' || !isClothingRequestClothType(clothType)) {
     return null;
   }
@@ -64,6 +65,10 @@ function parseCreateClothingRequest(rawBody: unknown): CreateClothingRequest | n
     return null;
   }
 
+  if (tags !== undefined && typeof tags !== 'string') {
+    return null;
+  }
+
   return {
     name,
     category,
@@ -71,6 +76,7 @@ function parseCreateClothingRequest(rawBody: unknown): CreateClothingRequest | n
     imageUrl,
     color,
     brand,
+    tags,
   };
 }
 
@@ -156,7 +162,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, category, clothType, imageUrl, color, brand } = body;
+    const { name, category, clothType, imageUrl, color, brand, tags } = body;
 
     if (!name || !imageUrl || !clothType) {
       return NextResponse.json(
@@ -176,6 +182,7 @@ export async function POST(request: NextRequest) {
         imageUrl,
         color: color || null,
         brand: brand || null,
+        tags: tags?.trim() || '',
       },
     });
 

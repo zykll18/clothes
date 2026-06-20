@@ -3,7 +3,15 @@ import type { LookSlot } from '@/lib/creator-preview';
 
 interface LookSlotCarouselStepProps {
   slot: LookSlot;
-  items: Array<{ id: string; name: string; imageUrl: string }>;
+  items: Array<{
+    id: string;
+    name: string;
+    imageUrl: string;
+    source: 'user' | 'system';
+    color?: string;
+    styleMatch: boolean;
+    colorMatch: boolean;
+  }>;
   selectedItemId: string | null;
   onSelectItem: (itemId: string) => void;
 }
@@ -58,7 +66,7 @@ export function LookSlotCarouselStep({
 
       {items.length === 0 ? (
         <div className="rounded-[1.6rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5 text-sm leading-7 text-[var(--lux-muted-foreground)]">
-          当前没有适合这个部位的素材，第一版可以先保留为空，后续再扩充素材库。
+          当前没有适合这个部位的衣服。可以先跳过这个部位，后续在橱窗里继续补充。
         </div>
       ) : (
         <div className="overflow-x-auto pb-2">
@@ -88,11 +96,26 @@ export function LookSlotCarouselStep({
                       className="object-cover transition duration-500 group-hover:scale-[1.04]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                    <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                      <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/85">
+                        {item.source === 'user' ? 'Wardrobe' : 'Preset'}
+                      </span>
+                      {item.colorMatch ? (
+                        <span className="rounded-full border border-[rgba(212,177,106,0.32)] bg-[rgba(212,177,106,0.16)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[rgba(255,245,225,0.88)]">
+                          Color
+                        </span>
+                      ) : null}
+                      {item.styleMatch ? (
+                        <span className="rounded-full border border-white/12 bg-white/[0.08] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-white/82">
+                          Style
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="px-4 py-4">
                     <p className="text-sm text-white">{item.name}</p>
                     <p className="mt-2 text-[10px] uppercase tracking-[0.24em] text-[rgba(255,245,225,0.42)]">
-                      {active ? 'Current Pick' : 'Swipe Choice'}
+                      {active ? 'Current Pick' : item.color || 'Swipe Choice'}
                     </p>
                   </div>
                 </button>

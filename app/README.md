@@ -25,7 +25,7 @@ npm install
 cp .env.example .env
 ```
 
-请在 `.env` 中填写真实的 `DASHSCOPE_API_KEY`，否则 AI 试衣相关功能无法正常使用；同时应将 `JWT_SECRET` 设为真实值，避免继续依赖不安全的回退密钥。开发环境默认使用本地 SQLite。
+请将 `JWT_SECRET` 设置为真实随机值。配置 `DASHSCOPE_API_KEY` 后会调用真实 AI 试衣服务；未配置或上游暂时不可用时，开发环境会生成带明确标识的本地搭配演示图，确保面试与本地评审可以走通完整流程。生产环境不会使用演示回退。
 
 ### 3. 初始化数据库
 
@@ -44,11 +44,13 @@ npm run dev
 
 ## 已实现能力
 
-- 用户注册与登录
-- 衣橱管理与服饰条目接口
-- 穿搭预览页与基础画布交互
-- 基于 DashScope 的 AI 试衣原型流程
-- 试衣历史记录接口与页面流程支撑
+- 用户注册、登录、退出与受保护页面跳转
+- 本人照片上传与衣橱管理，支持类别、颜色、品牌和风格标签
+- 按单品部位设置配色，选择整体风格并筛选衣橱
+- 游戏式选择外套、内搭、裤装、鞋子和配饰
+- 基于 DashScope 的 AI 试衣，以及开发环境本地演示回退
+- 搭配预览保存、历史查看、图片下载和记录删除
+- 独立画布编辑页，可上传底图并调整服饰构图
 
 ## 常用命令
 
@@ -57,6 +59,7 @@ npm run dev
 npm run build
 npm run start
 npm run lint
+npm test
 npm run db:generate
 npm run db:push
 npm run db:studio

@@ -57,12 +57,12 @@ export function RecommendationPoolStep({
   return (
     <div className="space-y-8">
       <div className="max-w-3xl">
-        <p className="lux-kicker text-[11px]">Mixed Recommendation Pool</p>
+        <p className="lux-kicker text-[11px]">Wardrobe Recommendation Pool</p>
         <h3 className="mt-3 font-serif text-3xl italic text-white sm:text-4xl">
           先从素材池里挑一个今天的主画面。
         </h3>
         <p className="mt-4 text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
-          用户素材和系统单品会混排出现。第一版里，这里选中的主素材会进入 AI 渲染，后面的部位选择继续补齐本次内容的搭配上下文。
+          用户衣橱和系统单品会混排出现。第一版里，这里选中的衣服会进入 AI 渲染，后面的部位选择继续补齐本次搭配上下文。
         </p>
       </div>
 

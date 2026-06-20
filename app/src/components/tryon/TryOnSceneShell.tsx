@@ -16,7 +16,7 @@ export function TryOnSceneShell({
   aside,
 }: TryOnSceneShellProps) {
   return (
-    <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20.5rem] xl:items-start">
+    <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20.5rem] xl:items-stretch">
       <div className="lux-stage-frame lux-noise relative overflow-hidden rounded-[2rem] p-5 sm:p-8 lg:p-9">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,177,106,0.16),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(0,0,0,0.12))]" />
         <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)]" />
@@ -44,8 +44,8 @@ export function TryOnSceneShell({
       </div>
 
       {aside ? (
-        <aside className="hidden xl:block xl:sticky xl:top-28">
-          <div className="lux-rail relative overflow-hidden rounded-[2rem] p-6">
+        <aside className="hidden xl:block xl:sticky xl:top-28 xl:self-stretch">
+          <div className="lux-rail relative h-full overflow-hidden rounded-[2rem] p-6">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%)]" />
             <div className="relative">{aside}</div>
           </div>
