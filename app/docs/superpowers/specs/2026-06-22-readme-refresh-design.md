@@ -2,7 +2,7 @@
 
 ## Goal
 
-Rewrite the repository README as a bilingual product and engineering case study suitable for GitHub visitors and technical interviews. It must explain what Aura Wardrobe does, demonstrate that the main user journey is complete, and provide accurate setup and deployment instructions.
+Rewrite the repository-level README as a bilingual product and engineering case study suitable for GitHub visitors and technical interviews. It must explain what Aura Wardrobe does, demonstrate that the main user journey is complete, and provide accurate setup and deployment instructions.
 
 ## Audience
 
@@ -44,7 +44,7 @@ Reserve three clearly labelled image slots:
 - Color and style planning workflow
 - Wardrobe selection and generated preview
 
-Use HTML comments and predictable asset paths under `docs/images/` so screenshots can be added later without showing broken images on GitHub.
+Use HTML comments and predictable asset paths under `docs/images/` so screenshots can be added later without showing broken images on GitHub. Keep `app/README.md` as a short link to the canonical repository-level document.
 
 ## Accuracy Requirements
 
