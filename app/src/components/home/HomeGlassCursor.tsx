@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
 import {
+  Html,
   MeshTransmissionMaterial,
   Preload,
   Text,
@@ -457,10 +458,12 @@ function HeroObjects({
   size,
   flowerVideo,
   progress,
+  showActions = false,
 }: {
   size: Size;
   flowerVideo: FlowerVideoState;
   progress: number;
+  showActions?: boolean;
 }) {
   const { viewport } = useThree();
   const mobile = size.width < 720;
@@ -554,6 +557,19 @@ function HeroObjects({
       >
         MENU
       </LabelText>
+      {showActions && (
+        <Html
+          position={[w / 2 - (mobile ? 0.78 : 0.78), top - 0.28, 0.12]}
+          center
+          zIndexRange={[30, 30]}
+        >
+          <a
+            aria-label="Open menu"
+            className="block h-14 w-24 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            href="#story"
+          />
+        </Html>
+      )}
 
       <LabelText
         position={[left, titleTop, 0.02]}
@@ -588,15 +604,44 @@ function HeroObjects({
       >
         Start styling ↗
       </LabelText>
+      {showActions && (
+        <Html
+          position={[left + (mobile ? 0.88 : 0.98), ctaTop - 0.2, 0.12]}
+          center
+          zIndexRange={[30, 30]}
+        >
+          <a
+            aria-label="Start styling"
+            className="block h-14 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            href="/auth/register"
+            style={{ width: mobile ? "176px" : "220px" }}
+          />
+        </Html>
+      )}
 
       {!mobile && (
-        <LabelText
-          position={[left + 2.42, ctaTop - 0.08, 0.04]}
-          fontSize={0.13}
-          opacity={0.76}
-        >
-          ▶  Manage wardrobe
-        </LabelText>
+        <>
+          <LabelText
+            position={[left + 2.42, ctaTop - 0.08, 0.04]}
+            fontSize={0.13}
+            opacity={0.76}
+          >
+            ▶  Manage wardrobe
+          </LabelText>
+          {showActions && (
+            <Html
+              position={[left + 3.15, ctaTop - 0.2, 0.12]}
+              center
+              zIndexRange={[30, 30]}
+            >
+              <a
+                aria-label="Manage wardrobe"
+                className="block h-12 w-48 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                href="/profile"
+              />
+            </Html>
+          )}
+        </>
       )}
 
       {[
@@ -860,7 +905,12 @@ const FluidHero = memo(function FluidHero({
         </>,
         scene,
       )}
-      <HeroObjects size={size} flowerVideo={flowerVideo} progress={progress} />
+      <HeroObjects
+        size={size}
+        flowerVideo={flowerVideo}
+        progress={progress}
+        showActions
+      />
       <mesh
         ref={lensRef}
         geometry={geometry}
@@ -914,28 +964,6 @@ export default function HomeGlassCursor() {
           <FluidHero size={size} progress={progress} />
         </Canvas>
       </div>
-      <nav
-        aria-label="Hero actions"
-        className={`fixed inset-0 z-20 transition-opacity duration-300 ${
-          progress < 0.18 ? "pointer-events-none opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      >
-        <a
-          aria-label="Start styling"
-          className="pointer-events-auto absolute left-[7%] top-[68%] h-14 w-[15.5rem] rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:left-[7%] sm:top-[66%]"
-          href="/auth/register"
-        />
-        <a
-          aria-label="Manage wardrobe"
-          className="pointer-events-auto absolute left-[7%] top-[78%] h-12 w-[14rem] rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:left-[25%] sm:top-[67%]"
-          href="/profile"
-        />
-        <a
-          aria-label="Open menu"
-          className="pointer-events-auto absolute right-[5%] top-[3%] h-16 w-24 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-          href="#story"
-        />
-      </nav>
       <div className="sr-only">
         <h1>Put your wardrobe in. Dress today.</h1>
         <p>
