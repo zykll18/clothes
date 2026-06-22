@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   OUTFIT_COLOR_SLOTS,
   type OutfitColorPlan,
@@ -69,13 +70,21 @@ export function ColorSelectionStep({
   onSelectColor,
   onSetWantsHat,
 }: ColorSelectionStepProps) {
-  const activeSlot =
+  const [editingSlot, setEditingSlot] = useState<OutfitColorSlot | null>(null);
+  const nextIncompleteSlot =
     REQUIRED_COLOR_SLOTS.find((slot) => !colorPlan[slot]) ??
     (wantsHat === null ? 'hat' : wantsHat && !colorPlan.hat ? 'hat' : null);
+  const activeSlot = editingSlot ?? nextIncompleteSlot;
 
-  const visibleSlots = wantsHat === false
-    ? REQUIRED_COLOR_SLOTS
-    : OUTFIT_COLOR_SLOTS;
+  const handleSelectColor = (slot: OutfitColorSlot, color: PrimaryColor) => {
+    onSelectColor(slot, color);
+    setEditingSlot(null);
+  };
+
+  const handleSetWantsHat = (nextWantsHat: boolean) => {
+    onSetWantsHat(nextWantsHat);
+    setEditingSlot(nextWantsHat ? 'hat' : null);
+  };
 
   return (
     <div className="space-y-8">
@@ -91,21 +100,24 @@ export function ColorSelectionStep({
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.82fr)_minmax(18rem,0.48fr)]">
         <div className="space-y-3">
-          {visibleSlots.map((slot) => {
+          {OUTFIT_COLOR_SLOTS.map((slot) => {
             const selectedColor = colorPlan[slot];
             const meta = SLOT_COPY[slot];
             const active = activeSlot === slot;
+            const hatDisabled = slot === 'hat' && wantsHat === false;
 
             return (
-              <section
+              <button
                 key={slot}
+                type="button"
+                onClick={() => setEditingSlot(slot)}
                 className={`
-                  rounded-[1.65rem] border px-5 py-4 transition duration-300
+                  w-full rounded-[1.65rem] border px-5 py-4 text-left transition duration-300
                   ${active
                     ? 'border-[rgba(212,177,106,0.48)] bg-[rgba(212,177,106,0.1)]'
                     : selectedColor
-                      ? 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.045)]'
-                      : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)]'}
+                      ? 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.045)] hover:border-[rgba(212,177,106,0.3)]'
+                      : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] hover:border-white/20'}
                 `}
               >
                 <div className="flex items-center justify-between gap-4">
@@ -130,20 +142,27 @@ export function ColorSelectionStep({
                       <span className="text-sm uppercase tracking-[0.16em] text-white/72">
                         {selectedColor}
                       </span>
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-white/38">
+                        更换
+                      </span>
                     </div>
+                  ) : hatDisabled ? (
+                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/52">
+                      不需要 · 可修改
+                    </span>
                   ) : (
                     <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/42">
                       Waiting
                     </span>
                   )}
                 </div>
-              </section>
+              </button>
             );
           })}
         </div>
 
         <aside className="rounded-[1.85rem] border border-white/10 bg-white/[0.035] p-5">
-          {activeSlot === 'hat' && wantsHat === null ? (
+          {activeSlot === 'hat' && wantsHat !== true ? (
             <div className="space-y-5">
               <div>
                 <p className="lux-kicker text-[11px]">Hat</p>
@@ -152,14 +171,14 @@ export function ColorSelectionStep({
               <div className="grid gap-3">
                 <button
                   type="button"
-                  onClick={() => onSetWantsHat(true)}
+                  onClick={() => handleSetWantsHat(true)}
                   className="rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.12)] px-5 py-3 text-sm text-white transition hover:bg-[rgba(212,177,106,0.18)]"
                 >
                   需要，继续选帽子颜色
                 </button>
                 <button
                   type="button"
-                  onClick={() => onSetWantsHat(false)}
+                  onClick={() => handleSetWantsHat(false)}
                   className="rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 text-sm text-white/80 transition hover:bg-white/[0.08]"
                 >
                   不需要帽子
@@ -183,7 +202,7 @@ export function ColorSelectionStep({
                       key={option.value}
                       type="button"
                       title={option.label}
-                      onClick={() => onSelectColor(activeSlot, option.value)}
+                      onClick={() => handleSelectColor(activeSlot, option.value)}
                       className={`
                         aspect-square rounded-full border transition duration-200 hover:scale-105
                         ${selected
@@ -197,13 +216,22 @@ export function ColorSelectionStep({
                   );
                 })}
               </div>
+              {activeSlot === 'hat' ? (
+                <button
+                  type="button"
+                  onClick={() => handleSetWantsHat(false)}
+                  className="w-full rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 text-sm text-white/80 transition hover:bg-white/[0.08]"
+                >
+                  改为不戴帽子
+                </button>
+              ) : null}
             </div>
           ) : (
             <div>
               <p className="lux-kicker text-[11px]">Palette Complete</p>
               <h4 className="mt-3 font-serif text-3xl italic text-white">颜色已经定好。</h4>
               <p className="mt-4 text-sm leading-7 text-[var(--lux-muted-foreground)]">
-                下一步选择风格，再根据这些颜色从衣橱里推衣服。
+                点击左侧任意部位可以继续更换，确认后再进入下一步。
               </p>
             </div>
           )}
