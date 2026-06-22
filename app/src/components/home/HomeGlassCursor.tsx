@@ -543,34 +543,6 @@ function HeroObjects({
         </>
       )}
 
-      <RoundedPanel
-        position={[w / 2 - (mobile ? 0.7 : 0.78), top - 0.28, 0]}
-        width={mobile ? 0.92 : 0.9}
-        height={0.56}
-        radius={0.28}
-        opacity={0.04}
-      />
-      <LabelText
-        position={[w / 2 - (mobile ? 0.95 : 1.02), top - 0.16, 0.04]}
-        fontSize={mobile ? 0.16 : 0.15}
-        opacity={0.92}
-      >
-        MENU
-      </LabelText>
-      {showActions && (
-        <Html
-          position={[w / 2 - (mobile ? 0.78 : 0.78), top - 0.28, 0.12]}
-          center
-          zIndexRange={[30, 30]}
-        >
-          <a
-            aria-label="Open menu"
-            className="block h-14 w-24 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-            href="#story"
-          />
-        </Html>
-      )}
-
       <LabelText
         position={[left, titleTop, 0.02]}
         fontSize={titleSize}
