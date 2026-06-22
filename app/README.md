@@ -27,6 +27,8 @@ cp .env.example .env
 
 请将 `JWT_SECRET` 设置为真实随机值。配置 `DASHSCOPE_API_KEY` 后会调用真实 AI 试衣服务；未配置或上游暂时不可用时，开发环境会生成带明确标识的本地搭配演示图，确保面试与本地评审可以走通完整流程。生产环境不会使用演示回退。
 
+Vercel 部署使用 `prisma/schema.postgresql.prisma`。在 Vercel Marketplace 中连接 Neon 后，确保项目拥有 `DATABASE_URL`，并将 Root Directory 设置为 `app`。本地开发仍使用 `prisma/schema.prisma` 与 SQLite。
+
 ### 3. 初始化数据库
 
 ```bash
@@ -57,6 +59,7 @@ npm run dev
 ```bash
 npm run dev
 npm run build
+npm run build:vercel
 npm run start
 npm run lint
 npm test

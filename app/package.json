@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "prisma generate --schema prisma/schema.postgresql.prisma && prisma db push --schema prisma/schema.postgresql.prisma && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --experimental-strip-types src/lib/creator-preview.test.ts",

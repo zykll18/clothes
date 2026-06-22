@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    String?
+  height    Float?
+  weight    Float?
+  bodyType  BodyType?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clothingItems          ClothingItem[]
+  outfits                Outfit[]
+  preferences            UserPreference[]
+  tryOnHistory           TryOnHistory[]
+  creatorPreviewSessions CreatorPreviewSession[]
+}
+
+model ClothingItem {
+  id        String           @id @default(cuid())
+  userId    String
+  name      String
+  category  ClothingCategory
+  clothType String
+  imageUrl  String
+  color     String?
+  brand     String?
+  price     Float?
+  size      String?
+  material  String?
+  tags      String           @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfits OutfitItem[]
+}
+
+model Outfit {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isPublic    Boolean  @default(false)
+  likes       Int      @default(0)
+  rating      Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OutfitItem[]
+}
+
+model OutfitItem {
+  id         String   @id @default(cuid())
+  outfitId   String
+  clothingId String
+  layer      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  outfit   Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  clothing ClothingItem @relation(fields: [clothingId], references: [id], onDelete: Cascade)
+}
+
+model UserPreference {
+  id            String @id @default(cuid())
+  userId        String
+  favoriteStyle String @default("")
+  favoriteColor String @default("")
+  favoriteBrand String @default("")
+  sizeChart     Json
+  occasions     String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TryOnHistory {
+  id                String   @id @default(cuid())
+  userId            String
+  personImageUrl    String
+  clothImageUrl     String
+  keepClothImageUrl String?
+  resultImageUrl    String
+  clothType         String
+  tryOnMode         String
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreatorPreviewSession {
+  id                  String   @id @default(cuid())
+  userId              String
+  personImageUrl      String
+  sourceImageUrl      String
+  primaryColor        String
+  outfitColorPlan     Json?
+  directionTags       Json
+  selectedOuterwearId String?
+  selectedInnerwearId String?
+  selectedPantsId     String?
+  selectedAccessoryId String?
+  selectedShoesId     String?
+  selectedDirection   String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variants CreatorPreviewVariant[]
+
+  @@index([userId, createdAt])
+}
+
+model CreatorPreviewVariant {
+  id               String   @id @default(cuid())
+  sessionId        String
+  direction        String
+  sortOrder        Int
+  resultUrl        String
+  presentationTone String
+  selected         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  session CreatorPreviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, sortOrder])
+  @@unique([sessionId, direction])
+}
+
+enum BodyType {
+  SLIM
+  REGULAR
+  ATHLETIC
+  PLUS_SIZE
+}
+
+enum ClothingCategory {
+  TOP
+  BOTTOM
+  DRESS
+  OUTERWEAR
+  SHOES
+  ACCESSORY
+}
+
+enum StyleType {
+  CASUAL
+  FORMAL
+  SPORTS
+  BUSINESS
+  PARTY
+}
+
+enum OccasionType {
+  WORK
+  DATE
+  PARTY
+  TRAVEL
+  HOME
+}
