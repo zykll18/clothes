@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isCreatorPreviewSavePayload } from './creator-preview.ts';
+import {
+  isCreatorPreviewSavePayload,
+  isOutfitColorPlanComplete,
+} from './creator-preview.ts';
 
 const basePayload = {
   personImageUrl: '/images/person.jpg',
@@ -51,6 +54,38 @@ test('rejects malformed outfit color plans', () => {
         hat: 'neon',
       },
     }),
+    false
+  );
+});
+
+test('completes the color plan when optional innerwear and hat are skipped', () => {
+  assert.equal(
+    isOutfitColorPlanComplete(
+      {
+        top: 'black',
+        pants: 'navy',
+        shoes: 'black',
+        socks: 'cream',
+      },
+      false,
+      false
+    ),
+    true
+  );
+});
+
+test('requires an innerwear color when innerwear is enabled', () => {
+  assert.equal(
+    isOutfitColorPlanComplete(
+      {
+        top: 'black',
+        pants: 'navy',
+        shoes: 'black',
+        socks: 'cream',
+      },
+      true,
+      false
+    ),
     false
   );
 });

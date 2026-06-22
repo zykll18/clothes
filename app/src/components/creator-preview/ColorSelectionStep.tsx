@@ -8,8 +8,10 @@ import {
 
 interface ColorSelectionStepProps {
   colorPlan: OutfitColorPlan;
+  wantsInnerwear: boolean | null;
   wantsHat: boolean | null;
   onSelectColor: (slot: OutfitColorSlot, color: PrimaryColor) => void;
+  onSetWantsInnerwear: (wantsInnerwear: boolean) => void;
   onSetWantsHat: (wantsHat: boolean) => void;
 }
 
@@ -62,16 +64,25 @@ const SLOT_COPY: Record<OutfitColorSlot, { label: string; helper: string }> = {
   },
 };
 
-const REQUIRED_COLOR_SLOTS = OUTFIT_COLOR_SLOTS.filter((slot) => slot !== 'hat');
+const REQUIRED_COLOR_SLOTS = OUTFIT_COLOR_SLOTS.filter(
+  (slot) => slot !== 'innerwear' && slot !== 'hat'
+);
 
 export function ColorSelectionStep({
   colorPlan,
+  wantsInnerwear,
   wantsHat,
   onSelectColor,
+  onSetWantsInnerwear,
   onSetWantsHat,
 }: ColorSelectionStepProps) {
   const [editingSlot, setEditingSlot] = useState<OutfitColorSlot | null>(null);
   const nextIncompleteSlot =
+    (wantsInnerwear === null
+      ? 'innerwear'
+      : wantsInnerwear && !colorPlan.innerwear
+        ? 'innerwear'
+        : null) ??
     REQUIRED_COLOR_SLOTS.find((slot) => !colorPlan[slot]) ??
     (wantsHat === null ? 'hat' : wantsHat && !colorPlan.hat ? 'hat' : null);
   const activeSlot = editingSlot ?? nextIncompleteSlot;
@@ -86,6 +97,11 @@ export function ColorSelectionStep({
     setEditingSlot(nextWantsHat ? 'hat' : null);
   };
 
+  const handleSetWantsInnerwear = (nextWantsInnerwear: boolean) => {
+    onSetWantsInnerwear(nextWantsInnerwear);
+    setEditingSlot(nextWantsInnerwear ? 'innerwear' : null);
+  };
+
   return (
     <div className="space-y-8">
       <div className="max-w-3xl">
@@ -94,7 +110,7 @@ export function ColorSelectionStep({
           先把每个部位的颜色定下来。
         </h3>
         <p className="mt-4 text-sm leading-7 text-[var(--lux-muted-foreground)] sm:text-base">
-          按内搭、上衣、裤装、鞋子、袜子逐个选色。帽子先决定需不需要，需要再选颜色。
+          上衣、裤装、鞋子和袜子逐个选色。内搭与帽子先决定需不需要，需要时再选颜色。
         </p>
       </div>
 
@@ -104,7 +120,10 @@ export function ColorSelectionStep({
             const selectedColor = colorPlan[slot];
             const meta = SLOT_COPY[slot];
             const active = activeSlot === slot;
-            const hatDisabled = slot === 'hat' && wantsHat === false;
+            const optionalDisabled =
+              (slot === 'innerwear' && wantsInnerwear === false) ||
+              (slot === 'hat' && wantsHat === false);
+            const optional = slot === 'innerwear' || slot === 'hat';
 
             return (
               <button
@@ -112,7 +131,7 @@ export function ColorSelectionStep({
                 type="button"
                 onClick={() => setEditingSlot(slot)}
                 className={`
-                  w-full rounded-[1.65rem] border px-5 py-4 text-left transition duration-300
+                  min-h-[8.75rem] w-full rounded-[1.65rem] border px-5 py-4 text-left transition duration-300 md:h-[8.75rem]
                   ${active
                     ? 'border-[rgba(212,177,106,0.48)] bg-[rgba(212,177,106,0.1)]'
                     : selectedColor
@@ -120,21 +139,21 @@ export function ColorSelectionStep({
                       : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] hover:border-white/20'}
                 `}
               >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
+                <div className="grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-5">
+                  <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-[0.24em] text-[rgba(255,245,225,0.44)]">
-                      {slot === 'hat' ? 'Optional' : 'Required'}
+                      {optional ? 'Optional' : 'Required'}
                     </p>
                     <h4 className="mt-2 font-serif text-3xl italic leading-none text-white">
                       {meta.label}
                     </h4>
-                    <p className="mt-2 text-sm leading-6 text-[var(--lux-muted-foreground)]">
+                    <p className="mt-2 max-w-[24rem] text-sm leading-6 text-[var(--lux-muted-foreground)]">
                       {meta.helper}
                     </p>
                   </div>
 
                   {selectedColor ? (
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-[7rem] items-center justify-end gap-2 sm:min-w-[8.5rem] sm:gap-3">
                       <span
                         className="h-11 w-11 rounded-full border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
                         style={{ backgroundColor: COLOR_OPTIONS.find((option) => option.value === selectedColor)?.swatch }}
@@ -146,12 +165,12 @@ export function ColorSelectionStep({
                         更换
                       </span>
                     </div>
-                  ) : hatDisabled ? (
-                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/52">
+                  ) : optionalDisabled ? (
+                    <span className="min-w-[7rem] rounded-full border border-white/10 px-3 py-1 text-center text-[10px] uppercase tracking-[0.22em] text-white/52 sm:min-w-[8.5rem]">
                       不需要 · 可修改
                     </span>
                   ) : (
-                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/42">
+                    <span className="min-w-[7rem] rounded-full border border-white/10 px-3 py-1 text-center text-[10px] uppercase tracking-[0.22em] text-white/42 sm:min-w-[8.5rem]">
                       Waiting
                     </span>
                   )}
@@ -162,7 +181,30 @@ export function ColorSelectionStep({
         </div>
 
         <aside className="rounded-[1.85rem] border border-white/10 bg-white/[0.035] p-5">
-          {activeSlot === 'hat' && wantsHat !== true ? (
+          {activeSlot === 'innerwear' && wantsInnerwear !== true ? (
+            <div className="space-y-5">
+              <div>
+                <p className="lux-kicker text-[11px]">Innerwear</p>
+                <h4 className="mt-3 font-serif text-3xl italic text-white">今天需要内搭吗？</h4>
+              </div>
+              <div className="grid gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSetWantsInnerwear(true)}
+                  className="rounded-full border border-[rgba(212,177,106,0.36)] bg-[rgba(212,177,106,0.12)] px-5 py-3 text-sm text-white transition hover:bg-[rgba(212,177,106,0.18)]"
+                >
+                  需要，继续选内搭颜色
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetWantsInnerwear(false)}
+                  className="rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 text-sm text-white/80 transition hover:bg-white/[0.08]"
+                >
+                  不需要内搭
+                </button>
+              </div>
+            </div>
+          ) : activeSlot === 'hat' && wantsHat !== true ? (
             <div className="space-y-5">
               <div>
                 <p className="lux-kicker text-[11px]">Hat</p>
@@ -216,6 +258,15 @@ export function ColorSelectionStep({
                   );
                 })}
               </div>
+              {activeSlot === 'innerwear' ? (
+                <button
+                  type="button"
+                  onClick={() => handleSetWantsInnerwear(false)}
+                  className="w-full rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 text-sm text-white/80 transition hover:bg-white/[0.08]"
+                >
+                  改为不穿内搭
+                </button>
+              ) : null}
               {activeSlot === 'hat' ? (
                 <button
                   type="button"

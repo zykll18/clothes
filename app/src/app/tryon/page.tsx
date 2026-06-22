@@ -25,6 +25,7 @@ import {
   DIRECTION_LABELS,
   DIRECTION_TONES,
   LOOK_SLOTS,
+  isOutfitColorPlanComplete,
   type CreatorDirection,
   type LookSlot,
   type OutfitColorPlan,
@@ -61,6 +62,7 @@ interface CreatorPreviewState {
   personImage: string | null;
   primaryColor: PrimaryColor | null;
   outfitColorPlan: OutfitColorPlan;
+  wantsInnerwear: boolean | null;
   wantsHat: boolean | null;
   selectedStyle: CreatorDirection | null;
   sourceImage: string | null;
@@ -91,6 +93,7 @@ const INITIAL_STATE: CreatorPreviewState = {
   personImage: null,
   primaryColor: null,
   outfitColorPlan: {},
+  wantsInnerwear: null,
   wantsHat: null,
   selectedStyle: null,
   sourceImage: null,
@@ -124,7 +127,7 @@ const SCENE_COPY: Record<
   2: {
     eyebrow: 'Step 02 / Color Plan',
     title: '逐件确定今天的颜色。',
-    description: '内搭、上衣、裤装、鞋子和袜子逐个选色；帽子先决定需不需要，需要再选颜色。',
+    description: '上衣、裤装、鞋子和袜子逐个选色；内搭与帽子先决定需不需要，需要再选颜色。',
     asideTitle: '颜色规则',
     asideBody: '分项颜色会直接影响后面的衣橱推荐排序，不再只用一个主色概括整套 look。',
   },
@@ -212,18 +215,6 @@ function getPrimaryColorFromPlan(colorPlan: OutfitColorPlan): PrimaryColor | nul
     colorPlan.socks ??
     colorPlan.hat ??
     null
-  );
-}
-
-function isColorPlanComplete(colorPlan: OutfitColorPlan, wantsHat: boolean | null): boolean {
-  return Boolean(
-    colorPlan.innerwear &&
-    colorPlan.top &&
-    colorPlan.pants &&
-    colorPlan.shoes &&
-    colorPlan.socks &&
-    wantsHat !== null &&
-    (!wantsHat || colorPlan.hat)
   );
 }
 
@@ -511,6 +502,34 @@ export default function CreatorPreviewPage() {
     [resetGeneratedState]
   );
 
+  const handleSetWantsInnerwear = useCallback(
+    (wantsInnerwear: boolean) => {
+      setState((previous) => {
+        const outfitColorPlan = wantsInnerwear
+          ? previous.outfitColorPlan
+          : {
+            ...previous.outfitColorPlan,
+            innerwear: undefined,
+          };
+
+        return {
+          ...previous,
+          wantsInnerwear,
+          outfitColorPlan,
+          primaryColor: getPrimaryColorFromPlan(outfitColorPlan),
+          slotSelections: wantsInnerwear
+            ? previous.slotSelections
+            : {
+              ...previous.slotSelections,
+              innerwear: undefined,
+            },
+        };
+      });
+      resetGeneratedState();
+    },
+    [resetGeneratedState]
+  );
+
   const handleSelectStyle = useCallback(
     (style: CreatorDirection) => {
       setState((previous) => ({
@@ -771,7 +790,14 @@ export default function CreatorPreviewPage() {
   }, [isSavingPreview, previewSaved, state.outfitColorPlan, state.personImage, state.primaryColor, state.selectedStyle, state.selectedVariantId, state.slotSelections, state.sourceImage, state.variants]);
 
   const selectedStyleLabel = state.selectedStyle ? DIRECTION_LABELS[state.selectedStyle] : null;
-  const colorPlanComplete = isColorPlanComplete(state.outfitColorPlan, state.wantsHat);
+  const colorPlanComplete = isOutfitColorPlanComplete(
+    state.outfitColorPlan,
+    state.wantsInnerwear,
+    state.wantsHat
+  );
+  const activeLookSlots = LOOK_SLOTS.filter(
+    (slot) => slot !== 'innerwear' || state.wantsInnerwear === true
+  );
 
   const canGenerateOutfit = Boolean(resolveGenerationInput());
 
@@ -902,8 +928,10 @@ export default function CreatorPreviewPage() {
       return (
         <ColorSelectionStep
           colorPlan={state.outfitColorPlan}
+          wantsInnerwear={state.wantsInnerwear}
           wantsHat={state.wantsHat}
           onSelectColor={handleSelectOutfitColor}
+          onSetWantsInnerwear={handleSetWantsInnerwear}
           onSetWantsHat={handleSetWantsHat}
         />
       );
@@ -934,7 +962,7 @@ export default function CreatorPreviewPage() {
             </p>
           </div>
 
-          {LOOK_SLOTS.map((slot) => (
+          {activeLookSlots.map((slot) => (
             <LookSlotCarouselStep
               key={slot}
               slot={slot}

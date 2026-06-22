@@ -85,6 +85,23 @@ export function isPrimaryColor(value: unknown): value is PrimaryColor {
   return typeof value === 'string' && PRIMARY_COLORS.includes(value as PrimaryColor);
 }
 
+export function isOutfitColorPlanComplete(
+  colorPlan: OutfitColorPlan,
+  wantsInnerwear: boolean | null,
+  wantsHat: boolean | null
+): boolean {
+  return Boolean(
+    colorPlan.top &&
+    colorPlan.pants &&
+    colorPlan.shoes &&
+    colorPlan.socks &&
+    wantsInnerwear !== null &&
+    (!wantsInnerwear || colorPlan.innerwear) &&
+    wantsHat !== null &&
+    (!wantsHat || colorPlan.hat)
+  );
+}
+
 export function isCreatorPreviewVariantInput(value: unknown): value is CreatorPreviewVariantInput {
   if (!isRecord(value)) {
     return false;
